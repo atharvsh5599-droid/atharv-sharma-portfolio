@@ -1,15 +1,14 @@
 import { systemPrompt } from '@/config/ChatPrompt';
-import {
-  getPortfolioFallback,
-  hasPortfolioIntent,
-} from '@/lib/chat-knowledge';
+import { getPortfolioFallback } from '@/lib/chat-knowledge';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
 const GEMINI_ENDPOINT =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
-const GEMINI_TIMEOUT_MS = 12000;
+const GEMINI_TIMEOUT_MS = 15000;
+const MAX_MESSAGE_LENGTH = 1500;
+const MAX_HISTORY_MESSAGES = 8;
 
 type ChatMessage = {
   sender: 'user' | 'bot';
@@ -17,7 +16,12 @@ type ChatMessage = {
 };
 
 function buildPrompt(messages: ChatMessage[], message: string) {
-  const recentMessages = messages
+  const lastMessage = messages[messages.length - 1];
+  const history =
+    lastMessage?.sender === 'user' && lastMessage.text.trim() === message
+      ? messages.slice(0, -1)
+      : messages;
+  const recentMessages = history
     .slice(-8)
     .map((chatMessage) => {
       const speaker = chatMessage.sender === 'user' ? 'Visitor' : 'Assistant';
@@ -34,6 +38,7 @@ function buildPrompt(messages: ChatMessage[], message: string) {
       '- Use concrete details from the portfolio context.',
       '- If listing projects, include project names and one-line summaries.',
       '- Do not stop after a generic preface like "Here are...".',
+      '- Give a direct answer first, then add only the context needed to answer the question.',
       '- Keep the response concise: 2-5 bullets or one short paragraph.',
     ].join('\n'),
     `Visitor: ${message}`,
@@ -61,29 +66,38 @@ function extractText(payload: unknown) {
     .trim();
 }
 
-function isWeakResponse(text: string) {
-  return (
-    text.length < 60 ||
-    /^here (are|is)\b.*:?$/i.test(text.trim()) ||
-    /^sure\b.*:?$/i.test(text.trim())
-  );
-}
-
 export async function POST(request: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   const body = await request.json().catch(() => null);
   const message = typeof body?.message === 'string' ? body.message.trim() : '';
-  const messages = Array.isArray(body?.messages)
-    ? (body.messages as ChatMessage[])
+  const messages: ChatMessage[] = Array.isArray(body?.messages)
+    ? body.messages
+        .filter(
+          (item: unknown): item is ChatMessage =>
+            typeof item === 'object' &&
+            item !== null &&
+            'sender' in item &&
+            (item.sender === 'user' || item.sender === 'bot') &&
+            'text' in item &&
+            typeof item.text === 'string',
+        )
+        .map((item: ChatMessage) => ({
+          sender: item.sender,
+          text: item.text.slice(0, MAX_MESSAGE_LENGTH),
+        }))
+        .slice(-MAX_HISTORY_MESSAGES)
     : [];
 
   if (!message) {
     return NextResponse.json({ error: 'Message is required.' }, { status: 400 });
   }
 
-  if (hasPortfolioIntent(message)) {
-    return NextResponse.json({ text: getPortfolioFallback(message) });
+  if (message.length > MAX_MESSAGE_LENGTH) {
+    return NextResponse.json(
+      { error: `Message must be ${MAX_MESSAGE_LENGTH} characters or fewer.` },
+      { status: 400 },
+    );
   }
 
   if (!apiKey) {
@@ -134,6 +148,6 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    text: isWeakResponse(text) ? getPortfolioFallback(message) : text,
+    text,
   });
 }

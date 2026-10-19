@@ -204,10 +204,7 @@ const ChatBubble: React.FC = () => {
               {heroConfig.name}&apos;s Portfolio Assistant
             </h3>
             <div className="text-muted-foreground text-xs">
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-green-500"></div>
-                Online
-              </div>
+              AI assistant for Atharv&apos;s portfolio
             </div>
           </div>
         </div>
@@ -319,7 +316,7 @@ const ChatBubble: React.FC = () => {
       <ExpandableChatFooter>
         <div className="flex space-x-2">
           <Input
-            placeholder="Ask me about my work and experience..."
+            placeholder="Ask about skills, education, or learning..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}

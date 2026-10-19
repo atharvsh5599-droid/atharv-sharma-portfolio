@@ -1,10 +1,12 @@
 import Container from '@/components/common/Container';
 import About from '@/components/landing/About';
+import CodingProfiles from '@/components/landing/CodingProfiles';
 import CTA from '@/components/landing/CTA';
 import Experience from '@/components/landing/Experience';
 import Github from '@/components/landing/Github';
 import Hero from '@/components/landing/Hero';
 import Journey from '@/components/landing/Journey';
+import Learning from '@/components/landing/Learning';
 import Work from '@/components/landing/Projects';
 import React from 'react';
 
@@ -15,6 +17,8 @@ export default function page() {
       <Experience />
       <Work />
       <About />
+      <Learning />
+      <CodingProfiles />
       <Github />
       <CTA />
       <Journey />

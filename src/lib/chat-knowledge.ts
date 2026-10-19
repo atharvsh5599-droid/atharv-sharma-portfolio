@@ -8,7 +8,6 @@ import { projects } from '@/config/Projects';
 function includesAny(text: string, keywords: string[]) {
   return keywords.some((keyword) => text.includes(keyword));
 }
-
 function projectLink(project: (typeof projects)[number]) {
   return project.github ?? project.live ?? project.link;
 }
@@ -54,7 +53,8 @@ function getRelevantProjects(message: string) {
 }
 
 export function getPortfolioKnowledgeContext() {
-  const skills = heroConfig.skills.map((skill) => skill.name).join(', ');
+  const skills =
+    'C++, Python, Data Structures, Algorithms, Problem Solving, NumPy, Pandas, HTML, and CSS';
   const education = `${about.education.degree}, expected graduation ${about.education.graduationYear}; school: ${about.education.school}`;
   const experienceText = experiences
     .map(
@@ -88,23 +88,31 @@ export function getPortfolioKnowledgeContext() {
     `ABOUT: ${about.description}`,
     `EDUCATION: ${education}`,
     `SKILLS: ${skills}`,
+    'CURRENTLY EXPLORING: Advanced Data Structures and Algorithms using C++, Full-Stack Web Development, Artificial Intelligence and Machine Learning, and the Python ecosystem.',
+    'VERIFIED PARTICIPATION: Participated in Smart India Hackathon (SIH).',
     `LOCATION: ${contactConfig.location}`,
     `AVAILABILITY: ${contactConfig.availability}`,
     `RESPONSE TIME: ${contactConfig.responseTime}`,
     `EXPERIENCE: ${experienceText || 'No employment history has been provided.'}`,
     `PROJECTS: ${projectText || 'No verified projects have been provided yet.'}`,
     `CERTIFICATES: ${certificateText || 'No certificates have been provided.'}`,
+    `CODING PROFILE: GeeksforGeeks: ${contactConfig.geeksforgeeks}`,
     `SOCIAL LINKS:\n- ${socialLinksText}`,
   ].join('\n\n');
 }
 
 export function getPortfolioFallback(message: string) {
   const lower = message.toLowerCase();
-  const skills = heroConfig.skills.map((skill) => skill.name).join(', ');
+  const skills =
+    'C++, Python, Data Structures, Algorithms, Problem Solving, NumPy, Pandas, HTML, and CSS';
   const email = socialLinks.find((link) => link.name === 'Email')?.href ?? '';
   const github = socialLinks.find((link) => link.name === 'Github')?.href ?? '';
   const linkedIn =
     socialLinks.find((link) => link.name === 'LinkedIn')?.href ?? '';
+
+  if (includesAny(lower, ['geeksforgeeks', 'geeks for geeks', 'gfg'])) {
+    return `Atharv's GeeksforGeeks profile: [Visit profile](${contactConfig.geeksforgeeks}).`;
+  }
 
   if (
     includesAny(lower, [
@@ -123,8 +131,8 @@ export function getPortfolioFallback(message: string) {
     return [
       selectedProjects.length > 0
         ? `${relevantProjects.length > 0 ? 'Relevant projects:' : 'My projects include:'}\n${selectedProjects.map(formatProject).join('\n')}`
-        : "I'm currently building my portfolio and will share projects here soon.",
-      `You can also review my GitHub here: [Atharv Sharma](${github}).`,
+        : "Atharv hasn't listed verified projects here yet. Check back as he continues building his portfolio.",
+      `You can also visit [Atharv's GitHub profile](${github}).`,
     ].join('\n\n');
   }
 
@@ -141,12 +149,12 @@ export function getPortfolioFallback(message: string) {
     ])
   ) {
     return [
-      `I'm **${about.name}**, an **${heroConfig.title}** based in **${contactConfig.location}**.`,
+      `**${about.name}** is an **${heroConfig.title}** based in **${contactConfig.location}**.`,
       `- **Education**: ${about.education.degree}, expected graduation ${about.education.graduationYear}. School: ${about.education.school}.`,
       `- **Core skills**: ${skills}.`,
       '- **Experience**: Participated in Smart India Hackathon (SIH).',
       '- **Current focus**: C++, Data Structures and Algorithms, Python, AI/ML, and Full-Stack Web Development.',
-      `- **Availability**: ${contactConfig.availability}.`,
+      `- **Current focus**: ${contactConfig.availability}.`,
     ].join('\n');
   }
 
@@ -167,9 +175,9 @@ export function getPortfolioFallback(message: string) {
     ])
   ) {
     return [
-      `I am building my programming foundation. Current skills include: **${skills}**.`,
-      '- I am strengthening my C++ and Data Structures and Algorithms fundamentals.',
-      '- I am exploring Python, NumPy, Pandas, AI/ML, and Full-Stack Web Development.',
+      `Atharv's listed skills and foundations include: **${skills}**.`,
+      '- He is strengthening his C++ and Data Structures and Algorithms fundamentals.',
+      '- He is exploring Python, NumPy, Pandas, AI/ML, and Full-Stack Web Development.',
     ].join('\n');
   }
 
@@ -189,10 +197,11 @@ export function getPortfolioFallback(message: string) {
     ])
   ) {
     return [
-      `I'm based in **${contactConfig.location}** and **${contactConfig.availability.toLowerCase()}**.`,
+      `Atharv is based in **${contactConfig.location}** and is **${contactConfig.availability.toLowerCase()}**.`,
       `- **Email**: [${contactConfig.email}](${email})`,
       `- **LinkedIn**: [Atharv Sharma](${linkedIn})`,
       `- **GitHub**: [atharvsh5599-droid](${github})`,
+      `- **GeeksforGeeks**: [Visit my profile](${contactConfig.geeksforgeeks})`,
       `- **Response time**: ${contactConfig.responseTime}.`,
       '',
       'For a useful first message, include the role/project, timeline, tech stack, and expected next step.',
@@ -218,8 +227,8 @@ export function getPortfolioFallback(message: string) {
       .join('\n');
 
     return experienceList
-      ? `My experience:\n${experienceList}`
-      : 'I participated in Smart India Hackathon (SIH). I am currently focused on learning and developing my technical foundations.';
+      ? `Experience:\n${experienceList}`
+      : 'Atharv participated in Smart India Hackathon (SIH) and is currently developing his technical foundations.';
   }
 
   if (
@@ -230,12 +239,12 @@ export function getPortfolioFallback(message: string) {
       'degree',
       'b.tech',
       'btech',
-      'nit',
-      'hamirpur',
+      'school',
+      'graduating',
       'graduation',
     ])
   ) {
-    return `I am pursuing **${about.education.degree}**, with expected graduation in **${about.education.graduationYear}**. My school is **${about.education.school}**.`;
+    return `Atharv is pursuing **${about.education.degree}**, with expected graduation in **${about.education.graduationYear}**. His school is **${about.education.school}**.`;
   }
 
   if (
@@ -256,79 +265,12 @@ export function getPortfolioFallback(message: string) {
 
     return certificateList
       ? `Certificates:\n${certificateList}`
-      : 'I participated in Smart India Hackathon (SIH). No certificates have been provided.';
+      : 'No certificates have been listed. Atharv participated in Smart India Hackathon (SIH).';
   }
 
   if (includesAny(lower, ['resume', 'cv'])) {
-    return `I am currently building my portfolio. Please contact me at [${contactConfig.email}](mailto:${contactConfig.email}).`;
+    return `A resume is not available here yet. Contact Atharv at [${contactConfig.email}](mailto:${contactConfig.email}).`;
   }
 
   return `${about.description} Ask me about my education, skills, current learning, Smart India Hackathon participation, or contact details.`;
-}
-
-export function hasPortfolioIntent(message: string) {
-  const lower = message.toLowerCase();
-
-  return includesAny(lower, [
-    'everything',
-    'overview',
-    'summary',
-    'about you',
-    'about me',
-    'who are you',
-    'profile',
-    'background',
-    'skill',
-    'tech',
-    'stack',
-    'ai',
-    'ml',
-    'machine learning',
-    'langchain',
-    'python',
-    'c++',
-    'linux',
-    'fastapi',
-    'work with',
-    'project',
-    'github',
-    'repo',
-    'portfolio',
-    'built',
-    'experience',
-    'alstom',
-    'sjvn',
-    'job',
-    'intern',
-    'training',
-    'trainee',
-    'work history',
-    'education',
-    'college',
-    'university',
-    'degree',
-    'b.tech',
-    'btech',
-    'nit',
-    'hamirpur',
-    'graduation',
-    'resume',
-    'cv',
-    'contact',
-    'hire',
-    'reach',
-    'connect',
-    'message',
-    'call',
-    'email',
-    'work together',
-    'available',
-    'availability',
-    'location',
-    'certificate',
-    'certification',
-    'achievement',
-    'course',
-    'bootcamp',
-  ]);
 }
