@@ -1,12 +1,13 @@
 export const contactConfig = {
-  title: "Let's build something useful",
+  title: "Let's connect",
   description:
-    'Reach out for AI/ML engineering roles, software projects, automation work, internships, collaborations, or technical discussions.',
-  email: 'aryan.engineer783@gmail.com',
-  github: 'https://github.com/ragnaar07',
-  linkedin: 'https://www.linkedin.com/in/aryansh7/',
+    'Reach out to talk about programming, learning, or technology.',
+  email: 'atharv.sh5599@gmail.com',
+  github: 'https://github.com/atharvsh5599-droid',
+  linkedin: 'https://www.linkedin.com/in/atharv-sharma-1746a1367/',
+  geeksforgeeks: 'https://www.geeksforgeeks.org/profile/as9817467007',
   location: 'India',
-  availability: 'Open to AI/ML, software engineering, and automation opportunities',
+  availability: 'Learning and building toward a career in software development',
   responseTime: 'Usually responds within 24-48 hours',
   form: {
     labels: {

@@ -4,7 +4,6 @@ import { contactConfig } from '@/config/Contact';
 import { experiences } from '@/config/Experience';
 import { heroConfig, socialLinks } from '@/config/Hero';
 import { projects } from '@/config/Projects';
-import { resumeConfig } from '@/config/Resume';
 
 function includesAny(text: string, keywords: string[]) {
   return keywords.some((keyword) => text.includes(keyword));
@@ -56,7 +55,7 @@ function getRelevantProjects(message: string) {
 
 export function getPortfolioKnowledgeContext() {
   const skills = heroConfig.skills.map((skill) => skill.name).join(', ');
-  const education = `${about.education.degree} from ${about.education.institution} (${about.education.startYear} - ${about.education.graduationYear})`;
+  const education = `${about.education.degree}, expected graduation ${about.education.graduationYear}; school: ${about.education.school}`;
   const experienceText = experiences
     .map(
       (experience) =>
@@ -92,11 +91,9 @@ export function getPortfolioKnowledgeContext() {
     `LOCATION: ${contactConfig.location}`,
     `AVAILABILITY: ${contactConfig.availability}`,
     `RESPONSE TIME: ${contactConfig.responseTime}`,
-    `RESUME: ${resumeConfig.resumeUrl}`,
-    `AI/ML CV: ${resumeConfig.cvUrl}`,
-    `EXPERIENCE:\n- ${experienceText}`,
-    `PROJECTS:\n- ${projectText}`,
-    `CERTIFICATES:\n- ${certificateText}`,
+    `EXPERIENCE: ${experienceText || 'No employment history has been provided.'}`,
+    `PROJECTS: ${projectText || 'No verified projects have been provided yet.'}`,
+    `CERTIFICATES: ${certificateText || 'No certificates have been provided.'}`,
     `SOCIAL LINKS:\n- ${socialLinksText}`,
   ].join('\n\n');
 }
@@ -124,13 +121,11 @@ export function getPortfolioFallback(message: string) {
       relevantProjects.length > 0 ? relevantProjects : projects;
 
     return [
-      relevantProjects.length > 0
-        ? 'Relevant projects:'
-        : 'My projects include:',
-      selectedProjects.map(formatProject).join('\n'),
-      '',
-      `You can also review my GitHub here: [ragnaar07](${github}).`,
-    ].join('\n');
+      selectedProjects.length > 0
+        ? `${relevantProjects.length > 0 ? 'Relevant projects:' : 'My projects include:'}\n${selectedProjects.map(formatProject).join('\n')}`
+        : "I'm currently building my portfolio and will share projects here soon.",
+      `You can also review my GitHub here: [Atharv Sharma](${github}).`,
+    ].join('\n\n');
   }
 
   if (
@@ -147,10 +142,10 @@ export function getPortfolioFallback(message: string) {
   ) {
     return [
       `I'm **${about.name}**, an **${heroConfig.title}** based in **${contactConfig.location}**.`,
-      `- **Education**: ${about.education.degree}, ${about.education.institution} (${about.education.startYear} - ${about.education.graduationYear}).`,
+      `- **Education**: ${about.education.degree}, expected graduation ${about.education.graduationYear}. School: ${about.education.school}.`,
       `- **Core skills**: ${skills}.`,
-      `- **Experience**: Industrial Software at Alstom, plus SCADA and grid automation training at SJVN.`,
-      '- **Project focus**: predictive maintenance, RAG assistants, AI automation, C++ validation tooling, embedded logging, Python automation, security utilities, and power-system studies.',
+      '- **Experience**: Participated in Smart India Hackathon (SIH).',
+      '- **Current focus**: C++, Data Structures and Algorithms, Python, AI/ML, and Full-Stack Web Development.',
       `- **Availability**: ${contactConfig.availability}.`,
     ].join('\n');
   }
@@ -172,10 +167,9 @@ export function getPortfolioFallback(message: string) {
     ])
   ) {
     return [
-      `I focus on AI/ML and production software. Core skills: **${skills}**.`,
-      '- I use Python for ML, automation, data processing, and API workflows.',
-      '- I use C++ and Linux for systems, middleware-style validation, and industrial software work.',
-      '- I have GenAI/RAG experience with LangChain, FAISS/vector search, prompt templates, and Hugging Face/OpenAI-style workflows.',
+      `I am building my programming foundation. Current skills include: **${skills}**.`,
+      '- I am strengthening my C++ and Data Structures and Algorithms fundamentals.',
+      '- I am exploring Python, NumPy, Pandas, AI/ML, and Full-Stack Web Development.',
     ].join('\n');
   }
 
@@ -197,8 +191,8 @@ export function getPortfolioFallback(message: string) {
     return [
       `I'm based in **${contactConfig.location}** and **${contactConfig.availability.toLowerCase()}**.`,
       `- **Email**: [${contactConfig.email}](${email})`,
-      `- **LinkedIn**: [aryansh7](${linkedIn})`,
-      `- **GitHub**: [ragnaar07](${github})`,
+      `- **LinkedIn**: [Atharv Sharma](${linkedIn})`,
+      `- **GitHub**: [atharvsh5599-droid](${github})`,
       `- **Response time**: ${contactConfig.responseTime}.`,
       '',
       'For a useful first message, include the role/project, timeline, tech stack, and expected next step.',
@@ -208,8 +202,7 @@ export function getPortfolioFallback(message: string) {
   if (
     includesAny(lower, [
       'experience',
-      'alstom',
-      'sjvn',
+      'hackathon',
       'job',
       'intern',
       'training',
@@ -224,7 +217,9 @@ export function getPortfolioFallback(message: string) {
       )
       .join('\n');
 
-    return `My experience:\n${experienceList}`;
+    return experienceList
+      ? `My experience:\n${experienceList}`
+      : 'I participated in Smart India Hackathon (SIH). I am currently focused on learning and developing my technical foundations.';
   }
 
   if (
@@ -240,7 +235,7 @@ export function getPortfolioFallback(message: string) {
       'graduation',
     ])
   ) {
-    return `I studied **${about.education.degree}** at **${about.education.institution}**. I started in **${about.education.startYear}** and graduated in **${about.education.graduationYear}**.`;
+    return `I am pursuing **${about.education.degree}**, with expected graduation in **${about.education.graduationYear}**. My school is **${about.education.school}**.`;
   }
 
   if (
@@ -259,14 +254,16 @@ export function getPortfolioFallback(message: string) {
       )
       .join('\n');
 
-    return `My certificates and achievements include:\n${certificateList}`;
+    return certificateList
+      ? `Certificates:\n${certificateList}`
+      : 'I participated in Smart India Hackathon (SIH). No certificates have been provided.';
   }
 
   if (includesAny(lower, ['resume', 'cv'])) {
-    return `You can view my systems resume and AI/ML CV on the [Resume page](/resume). Direct files: [Resume](${resumeConfig.resumeUrl}) and [AI/ML CV](${resumeConfig.cvUrl}).`;
+    return `I am currently building my portfolio. Please contact me at [${contactConfig.email}](mailto:${contactConfig.email}).`;
   }
 
-  return `${about.description} Ask me about my education, AI/ML skills, projects, work experience, certificates, resume, or contact details.`;
+  return `${about.description} Ask me about my education, skills, current learning, Smart India Hackathon participation, or contact details.`;
 }
 
 export function hasPortfolioIntent(message: string) {

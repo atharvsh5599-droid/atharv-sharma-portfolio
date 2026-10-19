@@ -2,7 +2,6 @@ import { heroConfig, skillComponents, socialLinks } from '@/config/Hero';
 import { parseTemplate } from '@/lib/hero';
 import { cn } from '@/lib/utils';
 import { Link } from 'next-view-transitions';
-import Image from 'next/image';
 import React from 'react';
 
 import Container from '../common/Container';
@@ -18,7 +17,7 @@ const buttonIcons = {
 };
 
 export default function Hero() {
-  const { name, title, avatar, skills, description, buttons } = heroConfig;
+  const { name, title, skills, description, buttons } = heroConfig;
 
   const renderDescription = () => {
     const parts = parseTemplate(description.template, skills);
@@ -51,15 +50,6 @@ export default function Hero() {
 
   return (
     <Container className="mx-auto max-w-7xl">
-      {/* Image */}
-      <Image
-        src={avatar}
-        alt="hero"
-        width={100}
-        height={100}
-        className="size-24 rounded-full object-cover"
-      />
-
       {/* Text Area */}
       <div className="mt-8 flex flex-col gap-2">
         <h1 className="text-4xl font-bold">
@@ -100,6 +90,7 @@ export default function Hero() {
               <Link
                 href={link.href}
                 key={link.name}
+                aria-label={link.name}
                 className="text-secondary flex items-center gap-2"
               >
                 <span className="size-6">{link.icon}</span>

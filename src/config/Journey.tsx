@@ -17,10 +17,10 @@ export const journeyItems: JourneyItem[] = [
     href: '/journey',
   },
   {
-    name: 'Certificates & Achievements',
-    description: 'A curated list of certificates and achievements.',
+    name: 'Smart India Hackathon',
+    description: 'Participated in Smart India Hackathon (SIH).',
     icon: CertificateIcon,
-    href: '/journey/certificates',
+    href: '/journey',
   },
 ];
 

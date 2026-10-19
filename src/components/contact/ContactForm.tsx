@@ -82,7 +82,7 @@ export default function ContactForm() {
         .join('\n'),
     );
 
-    window.location.href = `mailto:aryan.engineer783@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:atharv.sh5599@gmail.com?subject=${subject}&body=${body}`;
     toast.success('Opening your email app...');
   };
 

@@ -59,15 +59,21 @@ export default function ContactPage() {
                     </Link>
                   </Button>
                   <Button asChild variant="outline" className="w-full justify-start">
-                    <Link href={contactConfig.linkedin} target="_blank">
+                    <Link href={contactConfig.linkedin} target="_blank" rel="noreferrer">
                       <Linkedin className="mr-2 h-4 w-4" />
                       LinkedIn
                     </Link>
                   </Button>
                   <Button asChild variant="outline" className="w-full justify-start">
-                    <Link href={contactConfig.github} target="_blank">
+                    <Link href={contactConfig.github} target="_blank" rel="noreferrer">
                       <Github className="mr-2 h-4 w-4" />
                       GitHub
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full justify-start">
+                    <Link href={contactConfig.geeksforgeeks} target="_blank" rel="noreferrer">
+                      <span className="mr-2 font-bold">GfG</span>
+                      GeeksforGeeks
                     </Link>
                   </Button>
                 </div>

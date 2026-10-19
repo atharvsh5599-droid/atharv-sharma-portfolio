@@ -5,8 +5,8 @@ export interface NavItem {
 
 export const navbarConfig = {
   logo: {
-    src: '/assets/profile-avatar.jpg',
-    alt: 'Aryan Sharma',
+    src: '/assets/logo.png',
+    alt: 'Atharv Sharma',
     width: 100,
     height: 100,
   },

@@ -12,7 +12,9 @@ export function ProjectList({ projects, className }: ProjectListProps) {
   if (projects.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-muted-foreground">No projects found.</p>
+        <p className="text-muted-foreground mx-auto max-w-xl">
+          I&apos;m currently working on exciting projects and continuously building my portfolio. Check back soon to see what I&apos;m creating.
+        </p>
       </div>
     );
   }

@@ -140,6 +140,12 @@ export default function Github() {
               </p>
             )}
           </div>
+          <Button variant="outline" asChild>
+            <Link href={`https://github.com/${githubConfig.username}`} target="_blank" rel="noreferrer">
+              <GithubIcon className="mr-2 h-4 w-4" />
+              Visit My GitHub
+            </Link>
+          </Button>
         </div>
 
         {/* Content */}

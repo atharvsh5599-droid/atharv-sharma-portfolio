@@ -32,6 +32,8 @@ import Linux from '@/components/technologies/Linux';
 import MachineLearning from '@/components/technologies/MachineLearning';
 import OpenAI from '@/components/technologies/OpenAI';
 import Python from '@/components/technologies/Python';
+import Html from '@/components/technologies/Html';
+import CSS from '@/components/technologies/CSS';
 // Technology Components
 
 // Component mapping for skills
@@ -42,14 +44,14 @@ export const skillComponents = {
   MachineLearning: MachineLearning,
   OpenAI: OpenAI,
   FastAPI: FastAPI,
+  Html: Html,
+  CSS: CSS,
 };
 
 export const heroConfig = {
   // Personal Information
-  name: 'Aryan Sharma',
-  title: 'AI/ML Engineer | Software Engineer',
-  avatar: '/assets/profile-avatar.jpg',
-
+  name: 'Atharv Sharma',
+  title: 'Aspiring Software Developer | C++ & DSA Enthusiast',
   // Skills Configuration
   skills: [
     {
@@ -62,45 +64,27 @@ export const heroConfig = {
       href: 'https://www.python.org/',
       component: 'Python',
     },
-    {
-      name: 'Linux',
-      href: 'https://www.kernel.org/',
-      component: 'Linux',
-    },
-    {
-      name: 'Machine Learning',
-      href: 'https://scikit-learn.org/',
-      component: 'MachineLearning',
-    },
-    {
-      name: 'LangChain',
-      href: 'https://www.langchain.com/',
-      component: 'OpenAI',
-    },
-    {
-      name: 'FastAPI',
-      href: 'https://fastapi.tiangolo.com/',
-      component: 'FastAPI',
-    },
+    { name: 'HTML', href: 'https://developer.mozilla.org/en-US/docs/Web/HTML', component: 'Html' },
+    { name: 'CSS', href: 'https://developer.mozilla.org/en-US/docs/Web/CSS', component: 'CSS' },
   ],
 
   // Description Configuration
   description: {
     template:
-      'I build AI/ML and production software with {skills:1}, {skills:3}, {skills:4}, {skills:5}, and {skills:0}. My work spans predictive maintenance pipelines, practical AI agents, automation tooling, Linux systems, and industrial validation software.',
+      "Hi, I'm Atharv Sharma, a passionate learner and aspiring developer with a strong interest in programming, problem-solving, and building software.",
   },
 
   // Buttons Configuration
   buttons: [
     {
       variant: 'outline',
-      text: 'Resume / CV',
-      href: '/resume',
+      text: 'View My Work',
+      href: '/projects',
       icon: 'CV',
     },
     {
       variant: 'default',
-      text: 'Get in touch',
+      text: 'Contact Me',
       href: '/contact',
       icon: 'Chat',
     },
@@ -111,17 +95,17 @@ export const heroConfig = {
 export const socialLinks = [
   {
     name: 'LinkedIn',
-    href: 'https://www.linkedin.com/in/aryansh7/',
+    href: 'https://www.linkedin.com/in/atharv-sharma-1746a1367/',
     icon: <LinkedIn />,
   },
   {
     name: 'Github',
-    href: 'https://github.com/ragnaar07',
+    href: 'https://github.com/atharvsh5599-droid',
     icon: <Github />,
   },
   {
     name: 'Email',
-    href: 'mailto:aryan.engineer783@gmail.com',
+    href: 'mailto:atharv.sh5599@gmail.com',
     icon: <Mail />,
   },
 ];

@@ -14,9 +14,9 @@ RESPONSE RULES:
 - Use **bold** for emphasis when needed
 - Use bullet points (-) for lists when appropriate
 - Be conversational and helpful
-- Focus on Aryan's expertise and projects
-- For work inquiries, direct to email: [aryan.engineer783@gmail.com](mailto:aryan.engineer783@gmail.com), GitHub: [ragnaar07](https://github.com/ragnaar07), LinkedIn: [aryansh7](https://www.linkedin.com/in/aryansh7/)
-- Answer questions about education, technical skills, experience, projects, certificates, resume, and contact details
+- Focus on Atharv's learning interests and verified experience
+- For inquiries, direct to email: [atharv.sh5599@gmail.com](mailto:atharv.sh5599@gmail.com), GitHub: [atharvsh5599-droid](https://github.com/atharvsh5599-droid), LinkedIn: [Atharv Sharma](https://www.linkedin.com/in/atharv-sharma-1746a1367/)
+- Answer questions about education, learning interests, verified participation, and contact details
 - If unsure about details, suggest visiting the portfolio sections
 - You are not a bot, you are a human. you are ${about.name}. you talk in first person.
 - Refer ${about.name} as "Me" or "I"
@@ -28,6 +28,6 @@ export const systemPrompt = generateSystemPrompt();
 
 export const chatSuggestions = [
   'Tell me about your education and skills',
-  'Show me your main projects',
-  'Summarize your work experience',
+  'What are you currently learning?',
+  'Tell me about your hackathon participation',
 ];

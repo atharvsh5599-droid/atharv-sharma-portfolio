@@ -1,28 +1,21 @@
 import CPlusPlus from '@/components/technologies/CPlusPlus';
-import FastAPI from '@/components/technologies/FastAPI';
-import Linux from '@/components/technologies/Linux';
-import MachineLearning from '@/components/technologies/MachineLearning';
-import OpenAI from '@/components/technologies/OpenAI';
+import Html from '@/components/technologies/Html';
+import CSS from '@/components/technologies/CSS';
 import Python from '@/components/technologies/Python';
-import STM32 from '@/components/technologies/STM32';
 
 export const mySkills = [
   <CPlusPlus key="cpp" />,
   <Python key="python" />,
-  <Linux key="linux" />,
-  <MachineLearning key="machine-learning" />,
-  <OpenAI key="genai" />,
-  <FastAPI key="fastapi" />,
-  <STM32 key="stm32" />,
+  <Html key="html" />,
+  <CSS key="css" />,
 ];
 
 export const about = {
-  name: 'Aryan Sharma',
-  description: `I'm an AI/ML-focused engineer with hands-on Python, machine learning, GenAI, automation, C++, and Linux experience. I build practical intelligent systems, from predictive maintenance and signal-processing pipelines to RAG-style assistants and production-grade validation software.`,
+  name: 'Atharv Sharma',
+  description: `I am an aspiring software developer with a strong interest in problem-solving and programming. I enjoy learning new technologies and improving my skills through consistent practice. Currently, I am focused on strengthening my foundation in C++ and Data Structures & Algorithms while exploring Python, AI/ML, and Full-Stack Web Development.`,
   education: {
-    degree: 'B.Tech in Electrical Engineering',
-    institution: 'NIT Hamirpur',
-    startYear: '2021',
-    graduationYear: '2025',
+    degree: 'B.Tech in Computer Science Engineering (AI/ML)',
+    school: 'DAV Public School',
+    graduationYear: '2029',
   },
 };

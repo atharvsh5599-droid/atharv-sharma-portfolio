@@ -1,5 +1,4 @@
 import { about, mySkills } from '@/config/About';
-import Image from 'next/image';
 import React from 'react';
 
 import Container from '../common/Container';
@@ -12,17 +11,14 @@ export default function About() {
       <SectionHeading subHeading="About" heading="Me" />
       {/* About me */}
       <div className="mt-8 flex flex-col gap-4 md:flex-row">
-        <Image
-          src="/assets/profile-photo.jpg"
-          alt="About"
-          width={100}
-          height={100}
-          className="border-secondary size-60 rounded-md border-2 object-cover"
-        />
         <div className="mt-4">
           <h3 className="text-2xl font-bold">{about.name}</h3>
           <p className="text-secondary mt-4">{about.description}</p>
-          <p className="text-secondary mt-8 font-bold">Skills</p>
+          <p className="text-secondary mt-4">
+            I&apos;m pursuing a {about.education.degree}, with expected graduation in {about.education.graduationYear}. I attended {about.education.school}.
+          </p>
+          <p className="text-secondary mt-8 font-bold">Skills &amp; Foundations</p>
+          <p className="text-secondary mt-2">C++, Python, Data Structures, Algorithms, Problem Solving, NumPy, Pandas, HTML, and CSS.</p>
           <div className="flex flex-wrap gap-2">
             {mySkills.map((skill) => (
               <Tooltip key={skill.key}>
@@ -35,6 +31,8 @@ export default function About() {
               </Tooltip>
             ))}
           </div>
+          <p className="text-secondary mt-8 font-bold">Currently Exploring</p>
+          <p className="text-secondary mt-2">Advanced DSA with C++, Full-Stack Web Development, AI/ML, and Python and its ecosystem.</p>
         </div>
       </div>
     </Container>

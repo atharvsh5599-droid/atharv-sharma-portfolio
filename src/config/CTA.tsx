@@ -7,13 +7,13 @@
 
 export const ctaConfig = {
   // Profile image settings
-  profileImage: '/assets/profile-avatar.jpg',
-  profileAlt: 'Aryan Sharma',
+  profileImage: '/assets/logo.png',
+  profileAlt: 'Atharv Sharma',
 
   // CTA button settings
   linkText: 'Contact me',
   calLink: '/contact',
 
   // Pre-text message
-  preText: 'Hiring for AI/ML, software, automation, or industrial systems work? Send the details.',
+  preText: 'I am always happy to connect with fellow learners and developers.',
 };

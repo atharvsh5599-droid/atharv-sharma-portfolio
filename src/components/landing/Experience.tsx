@@ -10,17 +10,23 @@ import { Button } from '../ui/button';
 export default function Experience() {
   return (
     <Container className="mt-20">
-      <SectionHeading subHeading="Featured" heading="Experience" />
+      <SectionHeading subHeading="Learning & Participation" heading="My Journey" />
+      {experiences.length === 0 ? (
+        <div className="text-muted-foreground mt-8 rounded-md border border-dashed p-8 text-center">
+            Participated in Smart India Hackathon (SIH) while continuing to build my programming and problem-solving foundations.
+        </div>
+      ) : (
       <div className="mt-4 flex flex-col gap-8">
         {experiences.slice(0, 2).map((experience: Experience) => (
           <ExperienceCard key={experience.company} experience={experience} />
         ))}
       </div>
-      <div className="mt-8 flex justify-center">
+      )}
+      {experiences.length > 0 && <div className="mt-8 flex justify-center">
         <Button variant="outline">
           <Link href="/work-experience">Show all work experiences</Link>
         </Button>
-      </div>
+      </div>}
     </Container>
   );
 }

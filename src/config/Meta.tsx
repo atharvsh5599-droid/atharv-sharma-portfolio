@@ -12,28 +12,26 @@ export interface PageMeta {
 // Base site configuration
 export const siteConfig = {
   name: heroConfig.name,
-  title: 'Aryan Sharma Portfolio',
+  title: 'Atharv Sharma | Aspiring Software Developer',
   description:
-    'Portfolio of Aryan Sharma, software engineer focused on C++, Linux, Python, AI/ML, and industrial automation.',
+    "Explore Atharv Sharma's portfolio, featuring C++, Data Structures and Algorithms, programming, and interests in AI/ML and Full-Stack Web Development.",
   url: process.env.NEXT_PUBLIC_URL || 'http://localhost:3000',
   ogImage: '/meta/opengraph-image.png',
   author: {
     name: about.name,
     twitter: '',
-    github: 'ragnaar07',
-    linkedin: 'aryansh7',
-    email: 'aryan.engineer783@gmail.com',
+    github: 'atharvsh5599-droid',
+    linkedin: 'atharv-sharma-1746a1367',
+    email: 'atharv.sh5599@gmail.com',
   },
   keywords: [
     'portfolio',
-    'software engineer',
+    'aspiring software developer',
     'c++',
-    'linux',
     'python',
     'machine learning',
-    'ai engineer',
-    'embedded systems',
-    'industrial automation',
+    'data structures and algorithms',
+    'full-stack web development',
     heroConfig.name.toLowerCase(),
   ],
 };
@@ -60,7 +58,7 @@ export const pageMetadata: Record<string, PageMeta> = {
     description:
       "Get in touch with me for collaborations, projects, or opportunities. I'd love to hear from you!",
     keywords: ['contact', 'hire', 'collaboration', 'freelance', 'developer'],
-    ogImage: '/assets/profile-avatar.jpg',
+    ogImage: '/assets/logo.png',
     twitterCard: 'summary',
   },
 
@@ -115,8 +113,8 @@ export const pageMetadata: Record<string, PageMeta> = {
 
   // Resume page
   '/resume': {
-    title: 'Resume - Professional CV',
-    description: `View and download ${heroConfig.name}'s professional resume and CV. Technical skills, experience, and qualifications.`,
+    title: `${heroConfig.name} - Resume`,
+    description: `${heroConfig.name}'s resume will be available here when ready.`,
     keywords: [
       'resume',
       'cv',

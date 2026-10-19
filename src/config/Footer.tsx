@@ -1,5 +1,5 @@
 export const footerConfig = {
-  developer: 'Aryan Sharma',
+  developer: 'Atharv Sharma',
   text: 'Built by',
   copyright: 'All rights reserved.',
 };
