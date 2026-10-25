@@ -137,11 +137,7 @@ export async function GET() {
 
     const payload: UpstreamHeatmapResponse = await res.json();
 
-    if (
-      payload.status !== 'success' ||
-      !payload.data ||
-      !Array.isArray(payload.data.dailyContributions)
-    ) {
+    if (payload.status !== 'success' || !payload.data) {
       return NextResponse.json(
         {
           success: false,
@@ -152,13 +148,26 @@ export async function GET() {
     }
 
     const data = payload.data;
+    const dailyContributions = data.dailyContributions;
+
+    if (!Array.isArray(dailyContributions)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'GeeksforGeeks activity data schema was missing daily contributions',
+        },
+        { status: 502 },
+      );
+    }
+
     const coverageStart =
       data.startDate || data.firstActiveDate || '1970-01-01';
     const coverageEnd =
       data.endDate || data.lastActiveDate || formatIsoDate(new Date());
 
     const contributions = buildRollingCalendar(
-      data.dailyContributions,
+      dailyContributions,
       coverageStart,
       coverageEnd,
     );
