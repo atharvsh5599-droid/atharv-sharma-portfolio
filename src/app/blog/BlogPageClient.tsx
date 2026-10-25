@@ -1,29 +1,34 @@
 'use client';
 
+import { BookOpen, Filter, Search, Sparkles, X } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
+
 import { BlogList } from '@/components/blog/BlogList';
 import Container from '@/components/common/Container';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useHapticFeedback } from '@/hooks/use-haptic-feedback';
 import { BlogPostPreview } from '@/types/blog';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+
+const STANDARD_CATEGORIES = [
+  'All',
+  'DSA',
+  'C++',
+  'Web Development',
+  'AI/ML',
+  'Projects',
+  'Learning Notes',
+] as const;
+
+const POSTS_PER_PAGE = 6;
 
 interface BlogPageClientProps {
   initialPosts: BlogPostPreview[];
   initialTags: string[];
 }
-
-const getBlogPostsByTagClient = (
-  posts: BlogPostPreview[],
-  tag: string,
-): BlogPostPreview[] => {
-  return posts.filter((post) =>
-    post.frontmatter.tags.some(
-      (postTag) => postTag.toLowerCase() === tag.toLowerCase(),
-    ),
-  );
-};
 
 export function BlogPageClient({
   initialPosts,
@@ -33,92 +38,244 @@ export function BlogPageClient({
   const router = useRouter();
   const { triggerHaptic, isMobile } = useHapticFeedback();
 
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [filteredPosts, setFilteredPosts] = useState(initialPosts);
+  // Read initial filters from URL or default
+  const categoryParam = searchParams.get('category');
+  const tagParam = searchParams.get('tag');
+  const searchParam = searchParams.get('q');
 
-  // Get tag from URL params on mount
-  useEffect(() => {
-    const tagParam = searchParams.get('tag');
-    if (tagParam) {
-      setSelectedTag(tagParam);
-      const filtered = getBlogPostsByTagClient(initialPosts, tagParam);
-      setFilteredPosts(filtered);
-    } else {
-      setSelectedTag(null);
-      setFilteredPosts(initialPosts);
-    }
-  }, [searchParams, initialPosts]);
+  const [searchQuery, setSearchQuery] = useState(searchParam || '');
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    categoryParam || 'All',
+  );
+  const [selectedTag, setSelectedTag] = useState<string | null>(tagParam);
+  const [visibleCount, setVisibleCount] = useState<number>(POSTS_PER_PAGE);
 
-  // Handle tag click
-  const handleTagClick = (tag: string) => {
-    if (isMobile()) {
-      triggerHaptic('light');
-    }
+  // Filter posts based on search query, selected category, and selected tag
+  const filteredPosts = useMemo(() => {
+    return initialPosts.filter((post) => {
+      // Category filter
+      if (selectedCategory !== 'All') {
+        const postCat = (
+          post.frontmatter.category || 'Learning Notes'
+        ).toLowerCase();
+        if (postCat !== selectedCategory.toLowerCase()) {
+          return false;
+        }
+      }
 
-    if (selectedTag === tag) {
-      setSelectedTag(null);
-      setFilteredPosts(initialPosts);
-      router.replace('/blog');
-    } else {
-      setSelectedTag(tag);
-      const filtered = getBlogPostsByTagClient(initialPosts, tag);
-      setFilteredPosts(filtered);
-      router.replace(`/blog?tag=${encodeURIComponent(tag)}`);
-    }
+      // Tag filter
+      if (selectedTag) {
+        const hasTag = post.frontmatter.tags.some(
+          (t) => t.toLowerCase() === selectedTag.toLowerCase(),
+        );
+        if (!hasTag) {
+          return false;
+        }
+      }
+
+      // Search query filter (title, description, tags, category)
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const titleMatch = post.frontmatter.title.toLowerCase().includes(q);
+        const descMatch = post.frontmatter.description
+          .toLowerCase()
+          .includes(q);
+        const tagMatch = post.frontmatter.tags.some((t) =>
+          t.toLowerCase().includes(q),
+        );
+        const catMatch = (post.frontmatter.category || '')
+          .toLowerCase()
+          .includes(q);
+
+        if (!titleMatch && !descMatch && !tagMatch && !catMatch) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [initialPosts, selectedCategory, selectedTag, searchQuery]);
+
+  // Paginated slice
+  const displayedPosts = useMemo(() => {
+    return filteredPosts.slice(0, visibleCount);
+  }, [filteredPosts, visibleCount]);
+
+  const hasMore = visibleCount < filteredPosts.length;
+
+  const updateUrl = (cat: string, tag: string | null, query: string) => {
+    const params = new URLSearchParams();
+    if (cat !== 'All') params.set('category', cat);
+    if (tag) params.set('tag', tag);
+    if (query.trim()) params.set('q', query.trim());
+
+    const qs = params.toString();
+    router.replace(qs ? `/blog?${qs}` : '/blog');
   };
 
-  const getTagPostCount = (tag: string) => {
-    return initialPosts.filter((post) =>
-      post.frontmatter.tags.some(
-        (postTag) => postTag.toLowerCase() === tag.toLowerCase(),
-      ),
+  const handleCategorySelect = (category: string) => {
+    if (isMobile()) triggerHaptic('light');
+    setSelectedCategory(category);
+    setVisibleCount(POSTS_PER_PAGE);
+    updateUrl(category, selectedTag, searchQuery);
+  };
+
+  const handleTagSelect = (tag: string) => {
+    if (isMobile()) triggerHaptic('light');
+    const newTag = selectedTag === tag ? null : tag;
+    setSelectedTag(newTag);
+    setVisibleCount(POSTS_PER_PAGE);
+    updateUrl(selectedCategory, newTag, searchQuery);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    setVisibleCount(POSTS_PER_PAGE);
+    updateUrl(selectedCategory, selectedTag, val);
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSelectedTag(null);
+    setVisibleCount(POSTS_PER_PAGE);
+    router.replace('/blog');
+  };
+
+  // Category counts
+  const getCategoryCount = (category: string) => {
+    if (category === 'All') return initialPosts.length;
+    return initialPosts.filter(
+      (p) =>
+        (p.frontmatter.category || 'Learning Notes').toLowerCase() ===
+        category.toLowerCase(),
     ).length;
   };
 
+  const isFiltered =
+    selectedCategory !== 'All' ||
+    selectedTag !== null ||
+    searchQuery.trim().length > 0;
+
   return (
     <Container className="py-16">
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="space-y-4 text-center">
-          <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-            Blogs
+      <div className="space-y-10">
+        {/* Editorial Hero Section */}
+        <div className="border-border/60 from-muted/40 via-background to-background relative overflow-hidden rounded-2xl border bg-gradient-to-b p-8 text-center md:p-12">
+          <div className="border-border/80 bg-background/80 text-foreground mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur-sm">
+            <BookOpen className="text-primary size-3.5" />
+            <span>Technical Articles & Field Notes</span>
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
+            Engineering Insights & Notebook
           </h1>
-          <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-            Thoughts, tutorials, and insights on engineering, and programming.
+          <p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-base leading-relaxed sm:text-lg">
+            Hands-on tutorials, design patterns, C++ deep dives, Data Structures
+            & Algorithms, and modern web development lessons.
           </p>
-        </div>
 
-        <Separator />
-
-        {/* Tags */}
-        {initialTags.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Popular Tags</h2>
-              {selectedTag && (
+          {/* Search Bar */}
+          <div className="mx-auto mt-8 max-w-lg">
+            <div className="relative">
+              <Search className="text-muted-foreground absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
+              <Input
+                type="text"
+                placeholder="Search articles by title, topic, or tag..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="bg-background/90 border-border/80 focus-visible:ring-primary h-11 rounded-xl pr-10 pl-10 text-sm shadow-xs"
+                aria-label="Search articles"
+              />
+              {searchQuery && (
                 <button
-                  onClick={() => handleTagClick(selectedTag)}
-                  className="text-muted-foreground hover:text-foreground text-sm underline"
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    updateUrl(selectedCategory, selectedTag, '');
+                  }}
+                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 p-1"
+                  aria-label="Clear search"
                 >
-                  Clear filter
+                  <X className="size-4" />
                 </button>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
+          </div>
+        </div>
+
+        {/* Category Filters */}
+        <div className="space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-foreground flex items-center gap-2 text-sm font-semibold">
+              <Filter className="text-primary size-4" />
+              <span>Filter by Topic</span>
+            </div>
+            {isFiltered && (
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs underline underline-offset-4"
+              >
+                Reset filters
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {STANDARD_CATEGORIES.map((cat) => {
+              const count = getCategoryCount(cat);
+              const isSelected = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => handleCategorySelect(cat)}
+                  className="transition-all"
+                >
+                  <Badge
+                    variant={isSelected ? 'default' : 'outline'}
+                    className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                      isSelected
+                        ? 'bg-primary text-primary-foreground shadow-xs'
+                        : 'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {cat}
+                    <span className="ml-1.5 opacity-70">({count})</span>
+                  </Badge>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Popular Tags */}
+        {initialTags.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+              <Sparkles className="size-3.5" />
+              <span>Filter by Tag:</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
               {initialTags.map((tag) => {
-                const postCount = getTagPostCount(tag);
                 const isSelected = selectedTag === tag;
                 return (
                   <button
                     key={tag}
-                    onClick={() => handleTagClick(tag)}
-                    className="transition-colors"
+                    type="button"
+                    onClick={() => handleTagSelect(tag)}
+                    className="transition-all"
                   >
                     <Badge
-                      variant={isSelected ? 'default' : 'outline'}
-                      className="hover:bg-accent hover:text-accent-foreground tag-inner-shadow cursor-pointer capitalize"
+                      variant={isSelected ? 'secondary' : 'outline'}
+                      className={`cursor-pointer rounded-md px-2 py-0.5 text-[11px] ${
+                        isSelected
+                          ? 'border-primary/50 text-foreground bg-muted font-semibold'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
                     >
-                      {tag} ({postCount})
+                      #{tag}
                     </Badge>
                   </button>
                 );
@@ -127,21 +284,43 @@ export function BlogPageClient({
           </div>
         )}
 
-        {/* Blog Posts */}
+        <Separator />
+
+        {/* Results Header */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">
-              {selectedTag ? `Posts tagged "${selectedTag}"` : 'Latest Posts'}
-              {filteredPosts.length > 0 && (
-                <span className="text-muted-foreground ml-2 text-sm font-normal">
-                  ({filteredPosts.length}{' '}
-                  {filteredPosts.length === 1 ? 'post' : 'posts'})
-                </span>
-              )}
+            <h2 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
+              {selectedCategory !== 'All'
+                ? `${selectedCategory} Articles`
+                : 'All Articles'}
+              {selectedTag && ` tagged #${selectedTag}`}
             </h2>
+            <span className="text-muted-foreground text-xs sm:text-sm">
+              Showing {displayedPosts.length} of {filteredPosts.length} post
+              {filteredPosts.length === 1 ? '' : 's'}
+            </span>
           </div>
 
-          <BlogList posts={filteredPosts} />
+          {/* Blog Cards List */}
+          <BlogList
+            posts={displayedPosts}
+            onClearFilters={isFiltered ? handleClearFilters : undefined}
+          />
+
+          {/* Load More Pagination Button */}
+          {hasMore && (
+            <div className="mt-12 flex justify-center pt-6">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setVisibleCount((prev) => prev + POSTS_PER_PAGE)}
+                className="rounded-xl px-8"
+              >
+                Load More Articles ({filteredPosts.length - visibleCount}{' '}
+                remaining)
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </Container>

@@ -1,0 +1,100 @@
+---
+title: 'Building Clean, Accessible Interfaces with Tailwind CSS and Next.js'
+description: 'Lessons learned while building responsive personal websites, focusing on layout stability, theme transitions, and accessibility.'
+date: '2026-10-24'
+category: 'Web Development'
+tags: ['Web Development', 'Next.js', 'Tailwind CSS', 'React']
+published: true
+coverImage: '/blog/frontend-part-1.png'
+---
+
+> *Sample Content Note:* This article is an educational sample technical guide designed to demonstrate the portfolio's MDX publishing engine.
+
+Designing a personal engineering portfolio is more than assembling a list of projects; it is an exercise in user experience, typography, and frontend discipline.
+
+In this article, we explore key patterns for building clean, resilient user interfaces with Next.js 15 App Router, React 19, and Tailwind CSS.
+
+## The Problem with Hydration Mismatches
+
+When building websites with dark mode and client-side preferences using libraries like `next-themes`, one common headache is the dreaded React hydration mismatch:
+
+```text
+Warning: Text content did not match. Server: "dark" Client: "light"
+```
+
+### The Root Cause
+On the server, Next.js renders HTML using the default theme before browser storage (like `localStorage`) or system media queries can be read. When React hydrates in the browser, differences between the server HTML and the client state cause layout flashing or hydration errors.
+
+### The Solution: suppressHydrationWarning
+In the root layout, add `suppressHydrationWarning` to the `<html>` element and disable theme transitions during initial mount:
+
+```tsx
+// app/layout.tsx
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+## Mastering the cn() Utility
+
+When working with conditional Tailwind CSS classes, naive string concatenation can result in conflicting utility classes (e.g., `px-4 px-6`).
+
+Using `clsx` combined with `tailwind-merge` resolves conflicts deterministically:
+
+```ts
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+Now, calling `cn("px-4", condition && "px-6")` cleanly resolves to `"px-6"` when the condition is truthy, discarding the superseded `"px-4"`.
+
+## Accessible Touch Targets and Keyboard Focus
+
+A polished website must be navigable by keyboard and comfortable on mobile touchscreens:
+
+1. **Touch Target Size:** Interactive elements (buttons, badge filters) should have a minimum target size of $44 \times 44\text{px}$ on mobile screens.
+2. **Visible Focus Rings:** Never remove `outline: none` without providing an explicit `focus-visible:ring-2` replacement.
+3. **Screen Readers:** Always provide `aria-label` on icon-only buttons (such as social links, theme toggles, and copy buttons).
+
+```tsx
+<button
+  type="button"
+  aria-label="Toggle dark mode theme"
+  className="rounded-lg p-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden"
+>
+  <SunIcon className="size-5" />
+</button>
+```
+
+## Responsive Grid Layouts without Breakpoint Bloat
+
+Instead of hardcoding complex breakpoint rules for card lists, modern CSS grid auto-fit patterns provide fluid responsiveness with minimal classes:
+
+```tsx
+<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  {cards.map((card) => (
+    <Card key={card.id} {...card} />
+  ))}
+</div>
+```
+
+## Conclusion
+
+Combining Next.js App Router with Tailwind CSS v4 delivers exceptional speed, type safety, and visual polish. By respecting web accessibility fundamentals and ensuring layout stability during hydration, your developer portfolio leaves a lasting impression on recruiters, peers, and collaborators.

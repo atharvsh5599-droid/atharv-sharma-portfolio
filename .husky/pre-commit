@@ -1,1 +1,8 @@
 #!/usr/bin/env sh
+if command -v bunx >/dev/null 2>&1; then
+  bunx lint-staged
+elif command -v npx >/dev/null 2>&1; then
+  npx lint-staged
+else
+  echo "[husky pre-commit] Notice: Neither bunx nor npx found in PATH. Skipping lint-staged."
+fi
