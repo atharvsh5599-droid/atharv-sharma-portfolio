@@ -1,7 +1,8 @@
-import { about } from '@/config/About';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarDays, GraduationCap, Trophy } from 'lucide-react';
 import React from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { about } from '@/config/About';
 
 import Container from '../common/Container';
 import SectionHeading from '../common/SectionHeading';
@@ -9,7 +10,10 @@ import SectionHeading from '../common/SectionHeading';
 export default function Experience() {
   return (
     <Container className="mt-20">
-      <SectionHeading subHeading="Background" heading="Education & Participation" />
+      <SectionHeading
+        subHeading="Background"
+        heading="Education & Participation"
+      />
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center gap-3">
@@ -21,11 +25,14 @@ export default function Experience() {
           <CardContent className="space-y-2">
             <p className="font-medium">{about.education.degree}</p>
             <p className="text-muted-foreground text-sm">
-              School: {about.education.school}
+              College: {about.education.college}
             </p>
             <p className="text-muted-foreground flex items-center gap-2 text-sm">
               <CalendarDays className="size-4" aria-hidden="true" />
               Expected graduation: {about.education.graduationYear}
+            </p>
+            <p className="text-muted-foreground text-sm">
+              School: {about.education.school}
             </p>
           </CardContent>
         </Card>

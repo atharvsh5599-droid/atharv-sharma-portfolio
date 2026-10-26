@@ -1,5 +1,6 @@
-import { about, mySkills } from '@/config/About';
 import React from 'react';
+
+import { about, mySkills } from '@/config/About';
 
 import Container from '../common/Container';
 import SectionHeading from '../common/SectionHeading';
@@ -15,10 +16,18 @@ export default function About() {
           <h3 className="text-2xl font-bold">{about.name}</h3>
           <p className="text-secondary mt-4">{about.description}</p>
           <p className="text-secondary mt-4">
-            I&apos;m pursuing a {about.education.degree}, with expected graduation in {about.education.graduationYear}. I attended {about.education.school}.
+            I&apos;m pursuing a {about.education.degree} at{' '}
+            {about.education.college}, with expected graduation in{' '}
+            {about.education.graduationYear}. I attended{' '}
+            {about.education.school}.
           </p>
-          <p className="text-secondary mt-8 font-bold">Skills &amp; Foundations</p>
-          <p className="text-secondary mt-2">C++, Python, Data Structures, Algorithms, Problem Solving, NumPy, Pandas, HTML, and CSS.</p>
+          <p className="text-secondary mt-8 font-bold">
+            Skills &amp; Foundations
+          </p>
+          <p className="text-secondary mt-2">
+            C++, Python, Data Structures, Algorithms, Problem Solving, NumPy,
+            Pandas, HTML, and CSS.
+          </p>
           <div className="flex flex-wrap gap-2">
             {mySkills.map((skill) => (
               <Tooltip key={skill.key}>
@@ -32,7 +41,10 @@ export default function About() {
             ))}
           </div>
           <p className="text-secondary mt-8 font-bold">Currently Exploring</p>
-          <p className="text-secondary mt-2">Advanced DSA with C++, Full-Stack Web Development, AI/ML, and Python and its ecosystem.</p>
+          <p className="text-secondary mt-2">
+            Advanced DSA with C++, Full-Stack Web Development, AI/ML, and Python
+            and its ecosystem.
+          </p>
         </div>
       </div>
     </Container>

@@ -47,7 +47,9 @@ function getRelevantProjects(message: string) {
       .some(
         (word) =>
           lower.includes(word) ||
-          (word.length > 4 && description.includes(word) && lower.includes(word)),
+          (word.length > 4 &&
+            description.includes(word) &&
+            lower.includes(word)),
       );
   });
 }
@@ -55,7 +57,7 @@ function getRelevantProjects(message: string) {
 export function getPortfolioKnowledgeContext() {
   const skills =
     'C++, Python, Data Structures, Algorithms, Problem Solving, NumPy, Pandas, HTML, and CSS';
-  const education = `${about.education.degree}, expected graduation ${about.education.graduationYear}; school: ${about.education.school}`;
+  const education = `${about.education.degree} at ${about.education.college}, expected graduation ${about.education.graduationYear}; school: ${about.education.school}`;
   const experienceText = experiences
     .map(
       (experience) =>
@@ -150,7 +152,7 @@ export function getPortfolioFallback(message: string) {
   ) {
     return [
       `**${about.name}** is an **${heroConfig.title}** based in **${contactConfig.location}**.`,
-      `- **Education**: ${about.education.degree}, expected graduation ${about.education.graduationYear}. School: ${about.education.school}.`,
+      `- **Education**: ${about.education.degree} at ${about.education.college}, expected graduation ${about.education.graduationYear}. School: ${about.education.school}.`,
       `- **Core skills**: ${skills}.`,
       '- **Experience**: Participated in Smart India Hackathon (SIH).',
       '- **Current focus**: C++, Data Structures and Algorithms, Python, AI/ML, and Full-Stack Web Development.',
@@ -244,7 +246,7 @@ export function getPortfolioFallback(message: string) {
       'graduation',
     ])
   ) {
-    return `Atharv is pursuing **${about.education.degree}**, with expected graduation in **${about.education.graduationYear}**. His school is **${about.education.school}**.`;
+    return `Atharv is pursuing **${about.education.degree}** at **${about.education.college}**, with expected graduation in **${about.education.graduationYear}**. His school is **${about.education.school}**.`;
   }
 
   if (
