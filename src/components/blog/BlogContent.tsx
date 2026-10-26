@@ -1,7 +1,6 @@
 import rehypeHighlight from '@shikijs/rehype';
 import { AlignLeft, Clock } from 'lucide-react';
 import { MDXRemote } from 'next-mdx-remote/rsc';
-import Image from 'next/image';
 
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -9,6 +8,7 @@ import { BlogFrontmatter, TableOfContentsItem } from '@/types/blog';
 
 import Calender from '../svgs/Calender';
 import { BlogComponents } from './BlogComponents';
+import { SafeBlogImage } from './SafeBlogImage';
 
 interface BlogContentProps {
   frontmatter: BlogFrontmatter;
@@ -24,14 +24,18 @@ export function BlogContent({
   toc = [],
 }: BlogContentProps) {
   const { title, description, coverImage, image, tags, date, category } =
-    frontmatter;
+    frontmatter || {};
   const displayImage = coverImage || image || '/meta/blogs.png';
 
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const parsedDate = date ? new Date(date) : null;
+  const formattedDate =
+    parsedDate && !isNaN(parsedDate.getTime())
+      ? parsedDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : 'Recent';
 
   return (
     <article className="mx-auto max-w-3xl">
@@ -43,25 +47,28 @@ export function BlogContent({
               {category}
             </Badge>
           )}
-          {tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs">
-              #{tag}
-            </Badge>
-          ))}
+          {tags &&
+            tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-xs">
+                #{tag}
+              </Badge>
+            ))}
         </div>
 
         <h1 className="text-foreground text-3xl leading-[1.15] font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
-          {title}
+          {title || 'Untitled Article'}
         </h1>
 
-        <p className="text-muted-foreground text-lg leading-relaxed sm:text-xl">
-          {description}
-        </p>
+        {description && (
+          <p className="text-muted-foreground text-lg leading-relaxed sm:text-xl">
+            {description}
+          </p>
+        )}
 
         <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-xs sm:text-sm">
           <span className="flex items-center gap-1.5">
             <Calender className="size-4" />
-            <time dateTime={date}>{formattedDate}</time>
+            <time dateTime={date || undefined}>{formattedDate}</time>
           </span>
           <span>•</span>
           <span className="flex items-center gap-1.5">
@@ -72,9 +79,9 @@ export function BlogContent({
 
         {displayImage && (
           <div className="border-border/80 bg-muted relative aspect-video w-full overflow-hidden rounded-xl border shadow-sm">
-            <Image
+            <SafeBlogImage
               src={displayImage}
-              alt={title}
+              alt={title || 'Blog article cover'}
               fill
               className="object-cover"
               priority

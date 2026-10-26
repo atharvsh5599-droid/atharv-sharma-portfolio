@@ -10,13 +10,16 @@ import ArrowLeft from '@/components/svgs/ArrowLeft';
 import ArrowRight from '@/components/svgs/ArrowRight';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { siteConfig } from '@/config/Meta';
 import {
-  getAdjacentPosts,
-  getBlogPostBySlug,
-  getPublishedBlogPosts,
-  getRelatedPosts,
+  getUnifiedAdjacentPosts,
+  getUnifiedBlogPostBySlug,
+  getUnifiedPublishedBlogPosts,
+  getUnifiedRelatedPosts,
 } from '@/lib/blog';
+import { generateBlogPostMetadata } from '@/lib/blog-seo';
+
+export const revalidate = 60;
+export const dynamicParams = true;
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -26,7 +29,7 @@ interface BlogPostPageProps {
 
 // Generate static paths for all published blog posts
 export async function generateStaticParams() {
-  const posts = getPublishedBlogPosts();
+  const posts = await getUnifiedPublishedBlogPosts();
 
   return posts.map((post) => ({
     slug: post.slug,
@@ -38,63 +41,19 @@ export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
-
-  if (!post || !post.frontmatter.published) {
-    return {
-      title: 'Post Not Found | Atharv Sharma',
-    };
-  }
-
-  const { title, description, coverImage, image, date, tags } =
-    post.frontmatter;
-  const postImage = coverImage || image || '/meta/blogs.png';
-  const url = `${siteConfig.url}/blog/${slug}`;
-
-  return {
-    metadataBase: new URL(siteConfig.url),
-    title: `${title} | Atharv Sharma`,
-    description,
-    keywords: tags,
-    alternates: {
-      canonical: url,
-    },
-    openGraph: {
-      title,
-      description,
-      url,
-      images: [
-        {
-          url: postImage,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-      type: 'article',
-      publishedTime: date,
-      authors: [siteConfig.author.name],
-      tags,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [postImage],
-    },
-  };
+  return generateBlogPostMetadata(slug);
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const post = await getUnifiedBlogPostBySlug(slug);
 
   if (!post || !post.frontmatter.published) {
     notFound();
   }
 
-  const { prevPost, nextPost } = getAdjacentPosts(slug);
-  const relatedPosts = getRelatedPosts(slug, 2);
+  const { prevPost, nextPost } = await getUnifiedAdjacentPosts(slug);
+  const relatedPosts = await getUnifiedRelatedPosts(slug, 2);
 
   return (
     <>

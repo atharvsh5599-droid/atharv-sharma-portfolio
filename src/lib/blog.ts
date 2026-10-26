@@ -8,7 +8,13 @@ import {
   BlogPost,
   BlogPostPreview,
   TableOfContentsItem,
+  cmsPostToBlogPost,
+  cmsPostToPreview,
 } from '@/types/blog';
+
+import { sanitizeErrorMessage } from './blog-errors';
+import { UpstashRedisLike, getPostBySlug, listPosts } from './blog-storage';
+import { getRedisClient, isRedisConfigured } from './redis';
 
 const blogDirectory = path.join(process.cwd(), 'src/data/blog');
 
@@ -318,4 +324,261 @@ export function getRelatedPosts(
     .sort((a, b) => b.score - a.score);
 
   return postsWithScore.slice(0, maxPosts).map((item) => item.post);
+}
+
+/**
+ * ----------------------------------------------------------------------------
+ * Unified Dual-Source Blog Data Layer (Redis + Local MDX)
+ * ----------------------------------------------------------------------------
+ */
+
+/**
+ * Retrieves all published blog posts from both Upstash Redis and local filesystem MDX.
+ *
+ * Deterministic Strategy:
+ * 1. Redis is the primary dynamic source. If a post with the same slug exists in Redis:
+ *    - If published in Redis: it overrides the local MDX version.
+ *    - If draft in Redis: it suppresses the post entirely (the admin explicitly unpublished it in the CMS).
+ * 2. If a post exists only in local filesystem MDX:
+ *    - If published: it is included.
+ *    - If draft: it is excluded.
+ * 3. Results are deduplicated by slug and sorted newest-first by publication date,
+ *    with secondary alphabetical tie-break by slug.
+ * 4. If Redis is unavailable or unconfigured, it gracefully falls back to local MDX.
+ */
+export async function getUnifiedPublishedBlogPosts(
+  client?: UpstashRedisLike,
+): Promise<BlogPostPreview[]> {
+  // 1. Fetch local published posts
+  const localPosts = getPublishedBlogPosts();
+
+  // 2. Fetch from Redis if configured
+  let redisPublished: BlogPostPreview[] = [];
+  const redisDraftSlugs = new Set<string>();
+
+  try {
+    const redis =
+      client ||
+      (isRedisConfigured()
+        ? (getRedisClient() as unknown as UpstashRedisLike)
+        : null);
+
+    if (redis) {
+      // Fetch published posts
+      const pubResult = await listPosts({
+        status: 'published',
+        limit: 100,
+        client: redis,
+      });
+      redisPublished = pubResult.posts.map(cmsPostToPreview);
+
+      // Fetch draft slugs to ensure admin-unpublished posts suppress local MDX versions
+      const draftResult = await listPosts({
+        status: 'draft',
+        limit: 100,
+        client: redis,
+      });
+      for (const d of draftResult.posts) {
+        redisDraftSlugs.add(d.slug);
+      }
+    }
+  } catch (error) {
+    console.warn(
+      '[blog] Error querying Redis posts, falling back to local MDX:',
+      sanitizeErrorMessage(error),
+    );
+  }
+
+  // 3. Deduplicate and merge by slug
+  const slugMap = new Map<string, BlogPostPreview>();
+
+  // Add published Redis posts first (primary source of truth)
+  for (const post of redisPublished) {
+    slugMap.set(post.slug, post);
+  }
+
+  // Add local MDX posts if not overridden by Redis or suppressed by a draft in Redis
+  for (const localPost of localPosts) {
+    if (redisDraftSlugs.has(localPost.slug)) {
+      // Suppressed by draft in CMS
+      continue;
+    }
+    if (!slugMap.has(localPost.slug)) {
+      slugMap.set(localPost.slug, localPost);
+    }
+  }
+
+  // 4. Sort descending by date, secondary tie-break by slug
+  const combined = Array.from(slugMap.values());
+  combined.sort((a, b) => {
+    const timeDiff =
+      new Date(b.frontmatter.date).getTime() -
+      new Date(a.frontmatter.date).getTime();
+    if (timeDiff !== 0) {
+      return timeDiff;
+    }
+    return a.slug.localeCompare(b.slug);
+  });
+
+  return combined;
+}
+
+/**
+ * Retrieves a single published blog post by slug from Redis or local filesystem MDX.
+ *
+ * Deterministic Strategy:
+ * 1. Checks Upstash Redis first.
+ *    - If found with status === 'published': returns the formatted BlogPost (with extracted TOC).
+ *    - If found with status === 'draft': returns null (drafts must never be public).
+ * 2. If not found in Redis, checks local filesystem MDX.
+ *    - If found and published === true: returns the BlogPost.
+ *    - If found and published === false: returns null.
+ * 3. If not found in either: returns null.
+ */
+export async function getUnifiedBlogPostBySlug(
+  slug: string,
+  client?: UpstashRedisLike,
+): Promise<BlogPost | null> {
+  if (!slug) {
+    return null;
+  }
+
+  // 1. Check Redis first
+  try {
+    const redis =
+      client ||
+      (isRedisConfigured()
+        ? (getRedisClient() as unknown as UpstashRedisLike)
+        : null);
+
+    if (redis) {
+      const redisPost = await getPostBySlug(slug, { client: redis });
+      if (redisPost) {
+        // SECURITY REQUIREMENT 8: Prevent draft content from being fetched or rendered
+        if (redisPost.status !== 'published') {
+          return null;
+        }
+        const post = cmsPostToBlogPost(redisPost);
+        post.toc = extractTableOfContents(redisPost.content);
+        return post;
+      }
+    }
+  } catch (error) {
+    console.warn(
+      `[blog] Error checking Redis for slug "${slug}":`,
+      sanitizeErrorMessage(error),
+    );
+  }
+
+  // 2. Fallback to local filesystem MDX
+  const localPost = getBlogPostBySlug(slug);
+  if (localPost && localPost.frontmatter.published) {
+    return localPost;
+  }
+
+  return null;
+}
+
+/**
+ * Get adjacent published posts (previous and next) across the unified dataset.
+ */
+export async function getUnifiedAdjacentPosts(
+  slug: string,
+  client?: UpstashRedisLike,
+): Promise<{
+  prevPost: BlogPostPreview | null;
+  nextPost: BlogPostPreview | null;
+}> {
+  const published = await getUnifiedPublishedBlogPosts(client);
+  const index = published.findIndex((p) => p.slug === slug);
+
+  if (index === -1) {
+    return { prevPost: null, nextPost: null };
+  }
+
+  // Sorted newest first: index - 1 is newer (nextPost), index + 1 is older (prevPost)
+  const nextPost = index > 0 ? published[index - 1] : null;
+  const prevPost = index < published.length - 1 ? published[index + 1] : null;
+
+  return { prevPost, nextPost };
+}
+
+/**
+ * Get related posts across the unified dataset based on shared category and tags.
+ */
+export async function getUnifiedRelatedPosts(
+  currentSlug: string,
+  maxPosts = 3,
+  client?: UpstashRedisLike,
+): Promise<BlogPostPreview[]> {
+  const currentPost = await getUnifiedBlogPostBySlug(currentSlug, client);
+  if (!currentPost || !currentPost.frontmatter.published) {
+    return [];
+  }
+
+  const allPosts = await getUnifiedPublishedBlogPosts(client);
+  const currentTags = currentPost.frontmatter.tags.map((tag) =>
+    tag.toLowerCase(),
+  );
+  const currentCategory = currentPost.frontmatter.category?.toLowerCase();
+
+  const postsWithScore = allPosts
+    .filter((post) => post.slug !== currentSlug)
+    .map((post) => {
+      let score = 0;
+      if (
+        currentCategory &&
+        post.frontmatter.category?.toLowerCase() === currentCategory
+      ) {
+        score += 2;
+      }
+      const sharedTags = post.frontmatter.tags.filter((tag) =>
+        currentTags.includes(tag.toLowerCase()),
+      );
+      score += sharedTags.length;
+
+      return { post, score };
+    })
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  return postsWithScore.slice(0, maxPosts).map((item) => item.post);
+}
+
+/**
+ * Get all unique tags from published posts across the unified dataset.
+ */
+export async function getUnifiedTags(
+  client?: UpstashRedisLike,
+): Promise<string[]> {
+  const publishedPosts = await getUnifiedPublishedBlogPosts(client);
+  const tagsSet = new Set<string>();
+
+  publishedPosts.forEach((post) => {
+    post.frontmatter.tags.forEach((tag) => {
+      tagsSet.add(tag);
+    });
+  });
+
+  return Array.from(tagsSet).sort();
+}
+
+/**
+ * Get all categories with post counts across the unified dataset.
+ */
+export async function getUnifiedCategories(
+  client?: UpstashRedisLike,
+): Promise<{ name: string; count: number }[]> {
+  const publishedPosts = await getUnifiedPublishedBlogPosts(client);
+  const categoryMap = new Map<string, number>();
+
+  publishedPosts.forEach((post) => {
+    const cat = post.frontmatter.category || 'Learning Notes';
+    categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
+  });
+
+  return Array.from(categoryMap.entries()).map(([name, count]) => ({
+    name,
+    count,
+  }));
 }

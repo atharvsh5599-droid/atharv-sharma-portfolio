@@ -1,3 +1,6 @@
+import ReactLenis from 'lenis/react';
+import { ViewTransitions } from 'next-view-transitions';
+
 import UmamiAnalytics from '@/components/analytics/UmamiAnalytics';
 import ChatBubble from '@/components/common/ChatBubble';
 import Footer from '@/components/common/Footer';
@@ -5,9 +8,8 @@ import Navbar from '@/components/common/Navbar';
 import OnekoCat from '@/components/common/OnekoCat';
 import { Quote } from '@/components/common/Quote';
 import { ThemeProvider } from '@/components/common/ThemeProviders';
+import { Toaster } from '@/components/ui/sonner';
 import { generateMetadata as getMetadata } from '@/config/Meta';
-import ReactLenis from 'lenis/react';
-import { ViewTransitions } from 'next-view-transitions';
 
 import './globals.css';
 
@@ -31,6 +33,7 @@ export default function RootLayout({
             <ReactLenis root>
               <Navbar />
               {children}
+              <Toaster richColors position="top-right" />
               <OnekoCat />
               <Quote />
               <Footer />

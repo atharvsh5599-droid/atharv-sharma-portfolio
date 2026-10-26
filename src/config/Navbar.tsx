@@ -20,6 +20,10 @@ export const navbarConfig = {
       href: '/projects',
     },
     {
+      label: 'Blog',
+      href: '/blog',
+    },
+    {
       label: 'Contact',
       href: '/contact',
     },
