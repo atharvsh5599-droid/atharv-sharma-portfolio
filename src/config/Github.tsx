@@ -7,7 +7,7 @@
 
 export const githubConfig = {
   username: 'atharvsh5599-droid',
-  apiUrl: 'https://github-contributions-api.deno.dev',
+  apiUrl: '/api/github-activity',
 
   // Display settings
   title: 'GitHub Activity',

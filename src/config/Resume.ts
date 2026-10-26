@@ -1,4 +1,3 @@
 export const resumeConfig = {
-  resumeUrl: '',
-  cvUrl: '',
+  resumeUrl: '/resume/Atharv_Resume.pdf',
 };

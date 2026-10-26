@@ -1,6 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/**/*.{ts,tsx,js,jsx}"],
+  "entry": [
+    "src/app/**/{page,layout,loading,error,not-found,template,default,route}.{ts,tsx}",
+    "next.config.ts"
+  ],
   "project": ["**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}!"],
   "ignore": ["public/oneko/oneko.js"],
   "ignoreDependencies": [

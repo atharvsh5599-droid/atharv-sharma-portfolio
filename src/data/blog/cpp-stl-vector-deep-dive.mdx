@@ -1,0 +1,96 @@
+---
+title: 'Demystifying std::vector in C++: Memory, Growth, and Pitfalls'
+description: 'How std::vector manages dynamic memory, why iterator invalidation happens, and how to write cache-friendly loops.'
+date: '2026-10-20'
+category: 'C++'
+tags: ['C++', 'STL', 'Memory Management', 'Data Structures']
+published: true
+coverImage: '/blog/workspace.png'
+---
+
+> *Sample Content Note:* This article is an educational sample technical guide designed to demonstrate the portfolio's MDX publishing engine.
+
+In modern C++, `std::vector` is universally considered the default sequential container. Bjarne Stroustrup famously advocates for using `std::vector` unless you have a compelling, measured reason not to.
+
+Despite its ubiquity, many programmers encounter subtle memory bugs, iterator invalidation traps, or performance regressions. Let us inspect what `std::vector` looks like under the hood.
+
+## Memory Architecture: Three Pointers
+
+Under the hood, most standard library implementations (GCC's `libstdc++`, Clang's `libc++`, MSVC) represent `std::vector<T>` using three raw pointers:
+
+```cpp
+template <typename T>
+class vector {
+    T* start_;          // Pointer to the first element
+    T* finish_;         // Pointer one past the last initialized element
+    T* end_of_storage_; // Pointer to the end of allocated capacity
+};
+```
+
+From these three pointers:
+- `size() = finish_ - start_`
+- `capacity() = end_of_storage_ - start_`
+- Total footprint on a 64-bit architecture is just **24 bytes** ($3 \times 8\text{ bytes}$), regardless of how many elements the vector holds!
+
+## Reserve vs Resize: What is the Difference?
+
+One of the most frequent points of confusion in C++ is the difference between `reserve()` and `resize()`:
+
+| Method | Affects `size()`? | Affects `capacity()`? | Initializes Elements? |
+| :--- | :---: | :---: | :---: |
+| `reserve(n)` | No | Increases if $n > \text{capacity}$ | No |
+| `resize(n)` | Yes ($= n$) | Increases if $n > \text{capacity}$ | Yes (default value) |
+
+### The Power of `reserve()`
+
+```cpp
+#include <vector>
+
+void efficientPopulation() {
+    std::vector<int> data;
+    // Pre-allocate memory for 100,000 elements in ONE allocation
+    data.reserve(100000); 
+
+    for (int i = 0; i < 100000; ++i) {
+        data.push_back(i); // Guaranteed no reallocation occurs!
+    }
+}
+```
+
+Without `reserve()`, a loop inserting 100,000 elements triggers 17+ memory allocations and copies on common standard libraries.
+
+## Understanding Iterator Invalidation
+
+When an insertion causes `size() > capacity()`, the vector reallocates its internal buffer to a new heap location. Consequently, **every existing iterator, pointer, and reference into that vector becomes a dangling pointer!**
+
+```cpp
+#include <vector>
+#include <iostream>
+
+void dangerDemonstration() {
+    std::vector<int> vec = {10, 20, 30};
+    int* ptr = &vec[0];
+
+    // This push_back might trigger a reallocation
+    vec.push_back(40); 
+
+    // UNDEFINED BEHAVIOR: ptr may point to deallocated memory!
+    // std::cout << *ptr << std::endl; 
+}
+```
+
+### Safe Practice
+Never store pointers or iterators across mutating operations that can grow the vector. If you must inspect elements while adding, index by integer `vec[i]` or re-acquire the iterator.
+
+## Cache Locality: Why Vectors Beat Linked Lists
+
+Because `std::vector` stores its elements in a single contiguous block of heap memory, iterating through it allows modern CPU prefetchers to load entire cache lines (typically 64 bytes) ahead of time.
+
+In contrast, node-based containers like `std::list` allocate each node separately on the heap, scattering memory addresses and causing frequent **L1/L2 CPU cache misses**. For the vast majority of applications, cache locality gives `std::vector` a massive performance advantage.
+
+## Summary Checklist
+
+- [x] Default to `std::vector` for sequential collections.
+- [x] Call `reserve()` whenever you know or can estimate the element count.
+- [x] Beware of iterator and pointer invalidation on modifying operations.
+- [x] Prefer `emplace_back` when constructing complex objects in-place.

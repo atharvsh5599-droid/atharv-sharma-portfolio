@@ -114,7 +114,7 @@ export const pageMetadata: Record<string, PageMeta> = {
   // Resume page
   '/resume': {
     title: `${heroConfig.name} - Resume`,
-    description: `${heroConfig.name}'s resume will be available here when ready.`,
+    description: `View or download ${heroConfig.name}'s resume.`,
     keywords: [
       'resume',
       'cv',

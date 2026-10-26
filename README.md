@@ -32,7 +32,7 @@ My goal is to strengthen my programming fundamentals, build practical projects, 
 - **Skills:** C++, Python, Data Structures & Algorithms, NumPy, Pandas, HTML, and CSS.
 - **Currently Exploring:** Advanced DSA, Python, AI/ML, and Full-Stack Web Development.
 - **Projects:** A showcase of my verified projects, including descriptions, technologies, and repository links as projects become available.
-- **Education:** My B.Tech in Computer Science Engineering (AI/ML), expected graduation in 2029, and schooling at DAV Public School.
+- **Education:** My B.Tech in Computer Science Engineering (AI/ML) at Jawaharlal Nehru Government Engineering College, expected graduation in 2029, and schooling at DAV Public School.
 - **My Journey:** My learning progress and participation in Smart India Hackathon (SIH).
 - **Coding Profiles:** My GeeksforGeeks coding profile.
 - **GitHub:** A link to my public GitHub profile and repositories.
@@ -41,23 +41,28 @@ My goal is to strengthen my programming fundamentals, build practical projects, 
 ## Technical Skills
 
 ### Programming Languages
+
 - C++
 - Python
 
 ### Data Structures & Algorithms
+
 - Data Structures
 - Algorithms
 - Problem Solving
 
 ### Python Libraries
+
 - NumPy
 - Pandas
 
 ### Web Technologies
+
 - HTML
 - CSS
 
 ### Currently Learning
+
 - Advanced Data Structures & Algorithms
 - Full-Stack Web Development
 - Artificial Intelligence and Machine Learning
@@ -66,6 +71,8 @@ My goal is to strengthen my programming fundamentals, build practical projects, 
 ## Education
 
 **Degree:** B.Tech in Computer Science Engineering (AI/ML)
+
+**College:** Jawaharlal Nehru Government Engineering College
 
 **Expected Graduation:** 2029
 

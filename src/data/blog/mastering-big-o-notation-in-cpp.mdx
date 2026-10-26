@@ -1,0 +1,99 @@
+---
+title: 'A Practical Guide to Big-O and Time Complexity in C++'
+description: 'Understanding Big-O notation, amortized analysis, and common algorithmic complexities through practical C++ examples.'
+date: '2026-10-15'
+category: 'DSA'
+tags: ['DSA', 'C++', 'Algorithms', 'Big-O']
+published: true
+coverImage: '/blog/time.png'
+---
+
+> *Sample Content Note:* This article is an educational sample technical guide designed to demonstrate the portfolio's MDX publishing engine.
+
+When preparing for competitive programming and technical interviews, analyzing time and space complexity is just as crucial as arriving at a correct solution. Big-O notation provides a standardized language to quantify how an algorithm behaves as the input size $N$ grows toward infinity.
+
+In this guide, we break down the most common complexity classes encountered in C++ with concrete code demonstrations.
+
+## The Foundations of Big-O Notation
+
+Big-O describes the **upper bound** of an algorithm's growth rate in the worst-case scenario. It ignores constant factors and lower-order terms to focus strictly on asymptotic scaling:
+
+- **$O(1)$ — Constant Time:** Runtime remains invariant regardless of input size.
+- **$O(\log N)$ — Logarithmic Time:** The problem space halves in each iterative step (e.g., binary search).
+- **$O(N)$ — Linear Time:** Work scales proportionally with input elements.
+- **$O(N \log N)$ — Linearithmic Time:** Optimal comparison-based sorting (e.g., `std::sort`).
+- **$O(N^2)$ — Quadratic Time:** Nested iterations over the dataset.
+
+## Common Complexity Classes in C++
+
+### 1. Constant Time: Direct Array & Hash Map Lookups
+
+Accessing a vector element by index or performing an average-case lookup in `std::unordered_map` executes in $O(1)$ time:
+
+```cpp
+#include <iostream>
+#include <vector>
+
+int getFirstElement(const std::vector<int>& arr) {
+    if (arr.empty()) return -1;
+    return arr[0]; // Constant time lookup O(1)
+}
+```
+
+### 2. Logarithmic Time: Binary Search
+
+Dividing the search space in half each iteration leads to logarithmic behavior. In C++, `std::lower_bound` and `std::binary_search` provide built-in logarithmic searches over sorted ranges:
+
+```cpp
+#include <vector>
+
+int binarySearch(const std::vector<int>& arr, int target) {
+    int left = 0, right = arr.size() - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] == target) return mid;
+        if (arr[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1; // O(log N) runtime
+}
+```
+
+## Amortized Analysis: std::vector Growth
+
+A common misconception is that inserting an element at the back of `std::vector` using `push_back` always takes $O(1)$ time. 
+
+In reality, when the underlying buffer is full, `std::vector` allocates a new memory block (typically 1.5x or 2x the previous capacity), copies all existing elements over, and frees the old block. This re-allocation takes $O(N)$ time.
+
+```cpp
+#include <vector>
+#include <iostream>
+
+void demonstrateVectorGrowth() {
+    std::vector<int> numbers;
+    for (int i = 0; i < 10; ++i) {
+        numbers.push_back(i);
+        std::cout << "Size: " << numbers.size() 
+                  << " | Capacity: " << numbers.capacity() << "\n";
+    }
+}
+```
+
+Because costly reallocations happen exponentially less often as the capacity doubles, the average time per insertion across $N$ operations is $O(1)$. This is known as **amortized constant time**.
+
+## Complexity Reference Matrix
+
+Here is a quick reference summary of common data structures and their asymptotic time complexities:
+
+| Data Structure | Access | Search | Insertion | Deletion |
+| :--- | :---: | :---: | :---: | :---: |
+| `std::vector` | $O(1)$ | $O(N)$ | $O(1)$ amortized | $O(N)$ |
+| `std::deque` | $O(1)$ | $O(N)$ | $O(1)$ | $O(1)$ |
+| `std::set` (Red-Black Tree) | $O(\log N)$ | $O(\log N)$ | $O(\log N)$ | $O(\log N)$ |
+| `std::unordered_set` (Hash Table) | N/A | $O(1)$ avg | $O(1)$ avg | $O(1)$ avg |
+
+## Key Takeaways
+
+1. **Avoid premature optimization:** Focus on choosing the right data structure first.
+2. **Watch out for hidden copies:** Pass large structures by `const &` in C++ functions to prevent inadvertent $O(N)$ copy overhead.
+3. **Use `.reserve()`:** When the number of elements is known beforehand, call `vec.reserve(N)` to avoid multiple re-allocations.
