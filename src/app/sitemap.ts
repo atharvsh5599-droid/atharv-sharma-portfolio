@@ -1,9 +1,9 @@
 import { MetadataRoute } from 'next';
 
 import { siteConfig } from '@/config/Meta';
-import { getPublishedBlogPosts } from '@/lib/blog';
+import { getUnifiedPublishedBlogPosts } from '@/lib/blog';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url;
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -51,13 +51,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  const publishedPosts = getPublishedBlogPosts();
-  const blogRoutes: MetadataRoute.Sitemap = publishedPosts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.frontmatter.date),
-    changeFrequency: 'monthly',
-    priority: 0.8,
-  }));
+  const publishedPosts = await getUnifiedPublishedBlogPosts();
+  const blogRoutes: MetadataRoute.Sitemap = publishedPosts
+    .filter((post) => post.frontmatter.published)
+    .map((post) => {
+      const parsedDate = new Date(post.frontmatter.date);
+      const lastModified = !isNaN(parsedDate.getTime())
+        ? parsedDate
+        : new Date();
+
+      return {
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified,
+        changeFrequency: 'monthly',
+        priority: 0.8,
+      };
+    });
 
   return [...staticRoutes, ...blogRoutes];
 }

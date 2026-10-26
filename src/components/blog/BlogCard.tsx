@@ -1,6 +1,6 @@
 import { Clock } from 'lucide-react';
 import { Link } from 'next-view-transitions';
-import Image from 'next/image';
+import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import {
@@ -13,6 +13,7 @@ import { BlogPostPreview } from '@/types/blog';
 
 import ArrowRight from '../svgs/ArrowRight';
 import Calender from '../svgs/Calender';
+import { SafeBlogImage } from './SafeBlogImage';
 
 interface BlogCardProps {
   post: BlogPostPreview;
@@ -21,23 +22,27 @@ interface BlogCardProps {
 export function BlogCard({ post }: BlogCardProps) {
   const { slug, frontmatter, readingTime } = post;
   const { title, description, coverImage, image, tags, date, category } =
-    frontmatter;
+    frontmatter || {};
   const displayImage = coverImage || image || '/meta/blogs.png';
 
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  const parsedDate = date ? new Date(date) : null;
+  const formattedDate =
+    parsedDate && !isNaN(parsedDate.getTime())
+      ? parsedDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : 'Recent';
 
   return (
     <Card className="group border-border/60 bg-card hover:border-foreground/30 flex h-full flex-col overflow-hidden rounded-xl border p-0 shadow-sm transition-all duration-300 hover:shadow-md">
       <CardHeader className="p-0">
         <div className="bg-muted relative aspect-video w-full overflow-hidden">
           <Link href={`/blog/${slug}`} tabIndex={-1} aria-hidden="true">
-            <Image
+            <SafeBlogImage
               src={displayImage}
-              alt={title}
+              alt={title || 'Blog article cover'}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -57,7 +62,7 @@ export function BlogCard({ post }: BlogCardProps) {
         <div className="text-muted-foreground mb-3 flex items-center gap-3 text-xs">
           <span className="flex items-center gap-1">
             <Calender className="size-3.5" />
-            <time dateTime={date}>{formattedDate}</time>
+            <time dateTime={date || undefined}>{formattedDate}</time>
           </span>
           <span>•</span>
           <span className="flex items-center gap-1">
@@ -71,13 +76,15 @@ export function BlogCard({ post }: BlogCardProps) {
           className="group-hover:text-primary transition-colors"
         >
           <h3 className="text-card-foreground line-clamp-2 text-xl font-bold tracking-tight">
-            {title}
+            {title || 'Untitled Article'}
           </h3>
         </Link>
 
-        <p className="text-muted-foreground mt-2 line-clamp-3 text-sm leading-relaxed">
-          {description}
-        </p>
+        {description && (
+          <p className="text-muted-foreground mt-2 line-clamp-3 text-sm leading-relaxed">
+            {description}
+          </p>
+        )}
 
         {tags && tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-1.5 pt-2">

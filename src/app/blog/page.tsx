@@ -5,9 +5,11 @@ import Container from '@/components/common/Container';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { siteConfig } from '@/config/Meta';
-import { getAllTags, getPublishedBlogPosts } from '@/lib/blog';
+import { getUnifiedPublishedBlogPosts, getUnifiedTags } from '@/lib/blog';
 
 import { BlogPageClient } from './BlogPageClient';
+
+export const revalidate = 60;
 
 export const generateMetadata = (): Metadata => {
   const title = 'Blog & Engineering Notes | Atharv Sharma';
@@ -97,9 +99,9 @@ function BlogPageLoading() {
   );
 }
 
-export default function BlogPage() {
-  const allPosts = getPublishedBlogPosts();
-  const allTags = getAllTags();
+export default async function BlogPage() {
+  const allPosts = await getUnifiedPublishedBlogPosts();
+  const allTags = await getUnifiedTags();
 
   return (
     <Suspense fallback={<BlogPageLoading />}>
