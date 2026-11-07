@@ -1,11 +1,13 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { ProjectCaseStudyFrontmatter } from '@/types/project';
 import rehypeHighlight from '@shikijs/rehype';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { Link } from 'next-view-transitions';
 import Image from 'next/image';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { getSafeProjectImage } from '@/lib/project-image';
+import { ProjectCaseStudyFrontmatter } from '@/types/project';
 
 import Github from '../svgs/Github';
 import Website from '../svgs/Website';
@@ -45,11 +47,12 @@ export function ProjectContent({ frontmatter, content }: ProjectContentProps) {
       <header className="mb-8 space-y-6">
         <div className="relative aspect-video overflow-hidden rounded-lg">
           <Image
-            src={image}
+            src={getSafeProjectImage(image)}
             alt={title}
             fill
             className="object-cover"
             priority
+            unoptimized
           />
         </div>
 

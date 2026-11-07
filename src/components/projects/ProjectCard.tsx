@@ -1,5 +1,9 @@
 'use client';
 
+import { Link } from 'next-view-transitions';
+import Image from 'next/image';
+import React, { useState } from 'react';
+
 import {
   Card,
   CardContent,
@@ -12,10 +16,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { getSafeProjectImage } from '@/lib/project-image';
 import { type Project } from '@/types/project';
-import { Link } from 'next-view-transitions';
-import Image from 'next/image';
-import React, { useState } from 'react';
 
 import ArrowRight from '../svgs/ArrowRight';
 import Github from '../svgs/Github';
@@ -29,7 +31,9 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const titleHref = project.details ? project.projectDetailsPageSlug : project.link;
+  const titleHref = project.details
+    ? project.projectDetailsPageSlug
+    : project.link;
   const isExternalTitle = titleHref.startsWith('http');
 
   return (
@@ -38,10 +42,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="group relative aspect-video overflow-hidden">
           <Image
             className="h-full w-full object-cover"
-            src={project.image}
+            src={getSafeProjectImage(project.image)}
             alt={project.title}
             width={1920}
             height={1080}
+            unoptimized
           />
           {project.video && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

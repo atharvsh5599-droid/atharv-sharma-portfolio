@@ -4,6 +4,7 @@ import { contactConfig } from '@/config/Contact';
 import { experiences } from '@/config/Experience';
 import { heroConfig, socialLinks } from '@/config/Hero';
 import { projects } from '@/config/Projects';
+import { CmsProject } from '@/types/project';
 
 function includesAny(text: string, keywords: string[]) {
   return keywords.some((keyword) => text.includes(keyword));
@@ -54,7 +55,7 @@ function getRelevantProjects(message: string) {
   });
 }
 
-export function getPortfolioKnowledgeContext() {
+export function getPortfolioKnowledgeContext(cmsProjects: CmsProject[] = []) {
   const skills =
     'C++, Python, Data Structures, Algorithms, Problem Solving, NumPy, Pandas, HTML, and CSS';
   const education = `${about.education.degree} at ${about.education.college}, expected graduation ${about.education.graduationYear}; school: ${about.education.school}`;
@@ -66,14 +67,16 @@ export function getPortfolioKnowledgeContext() {
         )}`,
     )
     .join('\n- ');
-  const projectText = projects
-    .map(
+  const projectText = [
+    ...projects.map(
       (project) =>
-        `${project.title}: ${project.description} Tech: ${projectTech(
-          project,
-        )}. Link: ${projectLink(project)}`,
-    )
-    .join('\n- ');
+        `${project.title}: ${project.description} Tech: ${projectTech(project)}. Link: ${projectLink(project)}`,
+    ),
+    ...cmsProjects.map(
+      (project) =>
+        `${project.title}: ${project.description} Tech: ${project.technologies.join(', ')}. Link: ${project.live || project.github || `/projects/${project.slug}`}`,
+    ),
+  ].join('\n- ');
   const certificateText = certificates
     .map(
       (certificate) =>
@@ -103,7 +106,10 @@ export function getPortfolioKnowledgeContext() {
   ].join('\n\n');
 }
 
-export function getPortfolioFallback(message: string) {
+export function getPortfolioFallback(
+  message: string,
+  cmsProjects: CmsProject[] = [],
+) {
   const lower = message.toLowerCase();
   const skills =
     'C++, Python, Data Structures, Algorithms, Problem Solving, NumPy, Pandas, HTML, and CSS';
@@ -127,13 +133,33 @@ export function getPortfolioFallback(message: string) {
     ])
   ) {
     const relevantProjects = getRelevantProjects(lower);
-    const selectedProjects =
-      relevantProjects.length > 0 ? relevantProjects : projects;
+    const cmsMatches = cmsProjects.filter((project) =>
+      `${project.title} ${project.description} ${project.technologies.join(' ')}`
+        .toLowerCase()
+        .split(/\s+/)
+        .some((word) => word.length > 2 && lower.includes(word)),
+    );
+    const selectedProjects = [
+      ...relevantProjects.map(formatProject),
+      ...cmsMatches.map(
+        (project) =>
+          `- **${project.title}**: ${project.description} Tech: ${project.technologies.join(', ')}. [Link](${project.live || project.github || `/projects/${project.slug}`})`,
+      ),
+    ];
+    const allProjects = [
+      ...projects.map(formatProject),
+      ...cmsProjects.map(
+        (project) =>
+          `- **${project.title}**: ${project.description} Tech: ${project.technologies.join(', ')}. [Link](${project.live || project.github || `/projects/${project.slug}`})`,
+      ),
+    ];
 
     return [
       selectedProjects.length > 0
-        ? `${relevantProjects.length > 0 ? 'Relevant projects:' : 'My projects include:'}\n${selectedProjects.map(formatProject).join('\n')}`
-        : "Atharv hasn't listed verified projects here yet. Check back as he continues building his portfolio.",
+        ? `${relevantProjects.length > 0 || cmsMatches.length > 0 ? 'Relevant projects:' : 'My projects include:'}\n${selectedProjects.join('\n')}`
+        : allProjects.length > 0
+          ? `My projects include:\n${allProjects.join('\n')}`
+          : "Atharv hasn't listed verified projects here yet. Check back as he continues building his portfolio.",
       `You can also visit [Atharv's GitHub profile](${github}).`,
     ].join('\n\n');
   }

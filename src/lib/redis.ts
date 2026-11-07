@@ -23,6 +23,11 @@ export const BLOG_REDIS_KEYS = {
   tagKey: (tag: string) => `blog:tag:${tag.toLowerCase()}`,
 } as const;
 
+export const PROJECT_REDIS_KEYS = {
+  index: 'projects:all',
+  item: (id: string) => `projects:item:${id}`,
+} as const;
+
 /**
  * Checks whether Upstash Redis environment variables are configured.
  */

@@ -19,9 +19,15 @@ import { AdminUser } from '@/lib/auth/server-guard';
 interface AdminHeaderProps {
   admin: AdminUser;
   currentPage?: 'list' | 'new' | 'edit';
+  section?: 'blog' | 'projects';
 }
 
-export function AdminHeader({ admin, currentPage = 'list' }: AdminHeaderProps) {
+export function AdminHeader({
+  admin,
+  currentPage = 'list',
+  section = 'blog',
+}: AdminHeaderProps) {
+  const base = section === 'projects' ? '/admin/projects' : '/admin/blog';
   return (
     <header className="border-border/60 bg-card/60 sticky top-0 z-30 border-b backdrop-blur-md">
       <Container className="py-3.5">
@@ -35,29 +41,40 @@ export function AdminHeader({ admin, currentPage = 'list' }: AdminHeaderProps) {
               className="text-muted-foreground hover:text-foreground"
             >
               <Link
-                href="/blog"
+                href={section === 'projects' ? '/projects' : '/blog'}
                 className="flex items-center gap-1.5 text-xs font-medium"
               >
                 <ArrowLeft className="size-3.5" />
-                <span>Public Blog</span>
+                <span>
+                  {section === 'projects' ? 'Public Projects' : 'Public Blog'}
+                </span>
               </Link>
             </Button>
 
             <span className="text-muted-foreground/40">/</span>
 
             <Link
-              href="/admin/blog"
+              href={base}
               className="text-foreground hover:text-primary flex items-center gap-2 text-sm font-bold tracking-tight transition-colors"
             >
               <ShieldCheck className="text-primary size-4" />
-              <span>CMS Admin</span>
+              <span>
+                {section === 'projects' ? 'Project CMS' : 'CMS Admin'}
+              </span>
+            </Link>
+
+            <Link
+              href={section === 'projects' ? '/admin/blog' : '/admin/projects'}
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+            >
+              {section === 'projects' ? 'Blog CMS' : 'Project CMS'}
             </Link>
 
             {currentPage === 'new' && (
               <>
                 <span className="text-muted-foreground/40">/</span>
                 <span className="text-muted-foreground text-xs font-medium">
-                  New Post
+                  {section === 'projects' ? 'New Project' : 'New Post'}
                 </span>
               </>
             )}
@@ -66,7 +83,7 @@ export function AdminHeader({ admin, currentPage = 'list' }: AdminHeaderProps) {
               <>
                 <span className="text-muted-foreground/40">/</span>
                 <span className="text-muted-foreground text-xs font-medium">
-                  Edit Post
+                  {section === 'projects' ? 'Edit Project' : 'Edit Post'}
                 </span>
               </>
             )}
@@ -80,9 +97,11 @@ export function AdminHeader({ admin, currentPage = 'list' }: AdminHeaderProps) {
                 asChild
                 className="gap-1.5 rounded-xl shadow-xs"
               >
-                <Link href="/admin/blog/new">
+                <Link href={`${base}/new`}>
                   <Plus className="size-4" />
-                  <span>New Post</span>
+                  <span>
+                    {section === 'projects' ? 'New Project' : 'New Post'}
+                  </span>
                 </Link>
               </Button>
             )}

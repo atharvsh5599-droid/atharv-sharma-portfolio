@@ -1,3 +1,7 @@
+import { Metadata } from 'next';
+import { Link } from 'next-view-transitions';
+import { notFound } from 'next/navigation';
+
 import Container from '@/components/common/Container';
 import { ProjectContent } from '@/components/projects/ProjectContent';
 import { ProjectNavigation } from '@/components/projects/ProjectNavigation';
@@ -7,19 +11,19 @@ import { Separator } from '@/components/ui/separator';
 import { siteConfig } from '@/config/Meta';
 import {
   getProjectCaseStudyBySlug,
-  getPublishedProjectCaseStudies,
   getProjectNavigation,
+  getPublishedProjectCaseStudies,
   getRelatedProjectCaseStudies,
 } from '@/lib/project';
-import { Metadata } from 'next';
-import { Link } from 'next-view-transitions';
-import { notFound } from 'next/navigation';
+import { getCmsProject } from '@/lib/project-storage';
 
 interface ProjectCaseStudyPageProps {
   params: Promise<{
     slug: string;
   }>;
 }
+
+export const dynamic = 'force-dynamic';
 
 // Generate static paths for all project case studies
 export async function generateStaticParams() {
@@ -35,6 +39,20 @@ export async function generateMetadata({
   params,
 }: ProjectCaseStudyPageProps): Promise<Metadata> {
   const { slug } = await params;
+  const cmsProject = await getCmsProject(slug);
+  if (cmsProject?.status === 'published') {
+    return {
+      metadataBase: new URL(siteConfig.url),
+      title: `${cmsProject.title} - Project Case Study`,
+      description: cmsProject.description,
+      openGraph: {
+        title: cmsProject.title,
+        description: cmsProject.description,
+        images: [cmsProject.image],
+        type: 'article',
+      },
+    };
+  }
   const caseStudy = await getProjectCaseStudyBySlug(slug);
 
   if (!caseStudy || !caseStudy.frontmatter.isPublished) {
@@ -68,6 +86,52 @@ export default async function ProjectCaseStudyPage({
   params,
 }: ProjectCaseStudyPageProps) {
   const { slug } = await params;
+  const cmsProject = await getCmsProject(slug);
+  if (cmsProject?.status === 'published') {
+    const frontmatter = {
+      title: cmsProject.title,
+      description: cmsProject.description,
+      image: cmsProject.image,
+      technologies: cmsProject.technologies,
+      github: cmsProject.github,
+      live: cmsProject.live,
+      timeline: cmsProject.timeline,
+      role: cmsProject.role,
+      team: cmsProject.team || undefined,
+      status: 'completed' as const,
+      featured: cmsProject.featured,
+      challenges: cmsProject.challenges,
+      learnings: cmsProject.learnings,
+      isPublished: true,
+    };
+    return (
+      <Container className="py-16">
+        <div className="space-y-12">
+          <div>
+            <Button variant="ghost" asChild className="group">
+              <Link href="/projects" className="flex items-center space-x-2">
+                <ArrowLeft className="size-4" />
+                <span>Back to Projects</span>
+              </Link>
+            </Button>
+          </div>
+          <ProjectContent
+            frontmatter={frontmatter}
+            content={
+              cmsProject.content ||
+              `## ${cmsProject.title}\n\n${cmsProject.description}`
+            }
+          />
+          <div className="text-center">
+            <Separator className="mb-8" />
+            <Button asChild size="lg">
+              <Link href="/projects">View All Projects</Link>
+            </Button>
+          </div>
+        </div>
+      </Container>
+    );
+  }
   const caseStudy = await getProjectCaseStudyBySlug(slug);
 
   if (!caseStudy || !caseStudy.frontmatter.isPublished) {

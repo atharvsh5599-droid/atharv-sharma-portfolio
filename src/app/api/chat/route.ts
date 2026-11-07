@@ -1,6 +1,8 @@
-import { systemPrompt } from '@/config/ChatPrompt';
-import { getPortfolioFallback } from '@/lib/chat-knowledge';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { generateSystemPrompt } from '@/config/ChatPrompt';
+import { getPortfolioFallback } from '@/lib/chat-knowledge';
+import { listCmsProjects } from '@/lib/project-storage';
 
 export const runtime = 'nodejs';
 
@@ -15,7 +17,11 @@ type ChatMessage = {
   text: string;
 };
 
-function buildPrompt(messages: ChatMessage[], message: string) {
+function buildPrompt(
+  messages: ChatMessage[],
+  message: string,
+  systemPrompt: string,
+) {
   const lastMessage = messages[messages.length - 1];
   const history =
     lastMessage?.sender === 'user' && lastMessage.text.trim() === message
@@ -67,6 +73,8 @@ function extractText(payload: unknown) {
 }
 
 export async function POST(request: NextRequest) {
+  const cmsProjects = await listCmsProjects().catch(() => []);
+  const systemPrompt = generateSystemPrompt(cmsProjects);
   const apiKey = process.env.GEMINI_API_KEY;
 
   const body = await request.json().catch(() => null);
@@ -90,7 +98,10 @@ export async function POST(request: NextRequest) {
     : [];
 
   if (!message) {
-    return NextResponse.json({ error: 'Message is required.' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Message is required.' },
+      { status: 400 },
+    );
   }
 
   if (message.length > MAX_MESSAGE_LENGTH) {
@@ -101,7 +112,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (!apiKey) {
-    return NextResponse.json({ text: getPortfolioFallback(message) });
+    return NextResponse.json({
+      text: getPortfolioFallback(message, cmsProjects),
+    });
   }
 
   const abortController = new AbortController();
@@ -119,7 +132,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         contents: [
           {
-            parts: [{ text: buildPrompt(messages, message) }],
+            parts: [{ text: buildPrompt(messages, message, systemPrompt) }],
           },
         ],
         generationConfig: {
@@ -130,7 +143,9 @@ export async function POST(request: NextRequest) {
       signal: abortController.signal,
     });
   } catch {
-    return NextResponse.json({ text: getPortfolioFallback(message) });
+    return NextResponse.json({
+      text: getPortfolioFallback(message, cmsProjects),
+    });
   } finally {
     clearTimeout(timeout);
   }
@@ -138,13 +153,17 @@ export async function POST(request: NextRequest) {
   const payload = await geminiResponse.json().catch(() => null);
 
   if (!geminiResponse.ok) {
-    return NextResponse.json({ text: getPortfolioFallback(message) });
+    return NextResponse.json({
+      text: getPortfolioFallback(message, cmsProjects),
+    });
   }
 
   const text = extractText(payload);
 
   if (!text) {
-    return NextResponse.json({ text: getPortfolioFallback(message) });
+    return NextResponse.json({
+      text: getPortfolioFallback(message, cmsProjects),
+    });
   }
 
   return NextResponse.json({

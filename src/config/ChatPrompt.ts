@@ -1,11 +1,13 @@
-import { about } from './About';
 import { getPortfolioKnowledgeContext } from '../lib/chat-knowledge';
+import { about } from './About';
 
-function generateSystemPrompt(): string {
+export function generateSystemPrompt(
+  cmsProjects: import('@/types/project').CmsProject[] = [],
+): string {
   return `You are ${about.name}'s Portfolio Assistant representing ${about.name}.
 
 PORTFOLIO CONTEXT:
-${getPortfolioKnowledgeContext()}
+${getPortfolioKnowledgeContext(cmsProjects)}
 
 RESPONSE RULES:
 - Keep responses under 120 words unless the visitor asks for "all", "everything", or "details"

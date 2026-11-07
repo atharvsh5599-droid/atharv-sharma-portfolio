@@ -39,3 +39,27 @@ export interface ProjectCaseStudyPreview {
   slug: string;
   frontmatter: ProjectCaseStudyFrontmatter;
 }
+
+export type ProjectStatus = 'draft' | 'published';
+
+export interface CmsProject {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  image: string;
+  technologies: string[];
+  github: string;
+  live: string;
+  timeline: string;
+  role: string;
+  team: string;
+  status: ProjectStatus;
+  featured: boolean;
+  content: string;
+  challenges: string[];
+  learnings: string[];
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+}

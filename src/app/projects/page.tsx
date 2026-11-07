@@ -1,9 +1,11 @@
+import { Metadata } from 'next';
+
 import Container from '@/components/common/Container';
 import { ProjectList } from '@/components/projects/ProjectList';
 import { Separator } from '@/components/ui/separator';
 import { generateMetadata as getMetadata } from '@/config/Meta';
 import { projects } from '@/config/Projects';
-import { Metadata } from 'next';
+import { listCmsProjects } from '@/lib/project-storage';
 
 export const metadata: Metadata = {
   ...getMetadata('/projects'),
@@ -20,7 +22,28 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProjectsPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function ProjectsPage() {
+  const cmsProjects = await listCmsProjects();
+  const listedProjects = [
+    ...cmsProjects.map((project) => ({
+      title: project.title,
+      description: project.description,
+      image: project.image,
+      link: project.live || project.github || `/projects/${project.slug}`,
+      technologies: project.technologies.map((name) => ({
+        name,
+        icon: <span className="text-[10px]">{name.slice(0, 1)}</span>,
+      })),
+      github: project.github || undefined,
+      live: project.live || project.github || `/projects/${project.slug}`,
+      details: true,
+      projectDetailsPageSlug: `/projects/${project.slug}`,
+      isWorking: true,
+    })),
+    ...projects,
+  ];
   return (
     <Container className="py-16">
       <div className="space-y-8">
@@ -43,14 +66,14 @@ export default function ProjectsPage() {
               All Projects
               {projects.length > 0 && (
                 <span className="text-muted-foreground ml-2 text-sm font-normal">
-                  ({projects.length}{' '}
-                  {projects.length === 1 ? 'project' : 'projects'})
+                  ({listedProjects.length}{' '}
+                  {listedProjects.length === 1 ? 'project' : 'projects'})
                 </span>
               )}
             </h2>
           </div>
 
-          <ProjectList projects={projects} />
+          <ProjectList projects={listedProjects} />
         </div>
       </div>
     </Container>
