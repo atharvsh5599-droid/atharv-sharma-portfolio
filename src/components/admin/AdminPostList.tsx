@@ -523,20 +523,20 @@ export function AdminPostList({ initialPosts }: AdminPostListProps) {
               <span>Delete Blog Post</span>
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2 text-sm">
-              <p>
+              <span className="block">
                 Are you sure you want to permanently delete{' '}
                 <strong className="text-foreground">
                   &ldquo;{postToDelete?.title}&rdquo;
                 </strong>
                 ?
-              </p>
-              <p className="text-muted-foreground text-xs leading-relaxed">
+              </span>
+              <span className="text-muted-foreground block text-xs leading-relaxed">
                 This action is irreversible. The article record and its slug (
                 <code className="text-foreground font-mono">
                   /{postToDelete?.slug}
                 </code>
                 ) will be removed from Upstash Redis immediately.
-              </p>
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

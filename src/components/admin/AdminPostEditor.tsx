@@ -976,18 +976,18 @@ Explain your concept, share code samples, or provide a tutorial."
               <span>Delete This Article?</span>
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2 text-sm">
-              <p>
+              <span className="block">
                 Are you sure you want to permanently delete{' '}
                 <strong className="text-foreground">
                   &ldquo;{title}&rdquo;
                 </strong>
                 ?
-              </p>
-              <p className="text-muted-foreground text-xs leading-relaxed">
+              </span>
+              <span className="text-muted-foreground block text-xs leading-relaxed">
                 This will delete the post data and release the slug (
                 <code className="text-foreground font-mono">/{slug}</code>)
                 immediately. This cannot be undone.
-              </p>
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
